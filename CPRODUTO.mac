@@ -1,0 +1,58 @@
+CPRODUTO // versao em variaveis
+	Quit
+
+ // tentar armazenar todos as info numa array so
+ // tentar armazenar em array depois com $order(a(""),-1)
+pedirnome() Public {
+	Read "Digite o nome do produto: ", ^nome
+	Set ^codigo = $$gerarnum()
+	Write !, "O produto foi cadastrado como ", ^nome, " com código ", ^codigo
+	Do pedirvalor()
+	Quit
+}
+
+ // tentar colocar consistência para valor no formato x.xx
+pedirvalor() public {
+	Read !, "Qual o valor do produto? ", ^valor
+	Write !, "O produto "_^nome_" custa "_^valor_" reais."
+	Do pedirqtd()
+	Quit
+}
+
+pedirqtd() public {
+	Read !, "Quantos estão disponíveis? ", ^qtd
+	Write !, "Há "_^qtd_" "_^nome_"s por "_^valor_" reais cada."
+	Quit	
+}
+
+
+ // escolher para qual produto vai aplicar
+ // arrumar consistencia
+aplicarsale() public {
+	Read !, "Porcentagem do desconto: ", ^sale
+	Set ^valor = (1 - ^sale) * ^valor
+	Write !, "Há "_^qtd_" "_^nome_"'s por "_^valor_" reais cada."
+	
+	Quit	
+}
+
+ // ver como vai fz isso aqui kkkk
+retirarsale(produto) public {
+	
+	Quit
+}
+
+
+gerarnum() private {
+	Set code = $RANDOM(1000000)
+	Quit code
+}
+
+
+ // consistência para qtd < 0
+registrarcompra() public {
+	Read !, "Quantos foram comprados? ", comprados
+	Set ^qtd = ^qtd - comprados
+	Write !, "Agora há "_^qtd_" "_^nome_"s restantes."
+	Quit
+}
