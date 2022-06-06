@@ -1,27 +1,26 @@
-CPRODUTO // versao em variaveis
+CPRODUTO // versao em arrays
 	Quit
 
- // tentar armazenar todos as info numa array so
  // tentar armazenar em array depois com $order(a(""),-1)
 pedirnome() Public {
-	Read "Digite o nome do produto: ", ^nome
-	Set ^codigo = $$gerarnum()
-	Write !, "O produto foi cadastrado como ", ^nome, " com código ", ^codigo
+	Read "Digite o nome do produto: ", ^produto("nome")
+	Set ^produto("nome", "codigo") = $$gerarnum()
+	Write !, "O produto foi cadastrado como ", ^produto("nome"), " com código ", ^produto("nome", "codigo")
 	Do pedirvalor()
 	Quit
 }
 
  // tentar colocar consistência para valor no formato x.xx
 pedirvalor() public {
-	Read !, "Qual o valor do produto? ", ^valor
-	Write !, "O produto "_^nome_" custa "_^valor_" reais."
+	Read !, "Qual o valor do produto? ", ^produto("nome", "valor")
+	Write !, "O produto "_^produto("nome")_" custa "_^produto("nome", "valor")_" reais."
 	Do pedirqtd()
 	Quit
 }
 
 pedirqtd() public {
-	Read !, "Quantos estão disponíveis? ", ^qtd
-	Write !, "Há "_^qtd_" "_^nome_"s por "_^valor_" reais cada."
+	Read !, "Quantos estão disponíveis? ", ^produto("nome", "qtd")
+	Write !, "Há "_^produto("nome", "qtd")_" "_^produto("nome")_"(s) por "_^produto("nome", "valor")_" reais cada."
 	Quit	
 }
 
@@ -29,9 +28,9 @@ pedirqtd() public {
  // escolher para qual produto vai aplicar
  // arrumar consistencia
 aplicarsale() public {
-	Read !, "Porcentagem do desconto: ", ^sale
-	Set ^valor = (1 - ^sale) * ^valor
-	Write !, "Há "_^qtd_" "_^nome_"'s por "_^valor_" reais cada."
+	Read !, "Porcentagem do desconto: ", ^produto("nome", "sale")
+	Set ^produto("nome", "valor") = (1 - ^produto("nome", "sale")) * ^produto("nome", "valor")
+	Write !, "Há "_^produto("nome", "qtd")_" "_^produto("nome")_"(s) por "_^produto("nome", "valor")_" reais cada."
 	
 	Quit	
 }
@@ -51,8 +50,17 @@ gerarnum() private {
 
  // consistência para qtd < 0
 registrarcompra() public {
-	Read !, "Quantos foram comprados? ", comprados
-	Set ^qtd = ^qtd - comprados
-	Write !, "Agora há "_^qtd_" "_^nome_"s restantes."
+	Read !, "Quantos deseja comprar? ", comprados
+	If comprados > ^produto("nome", "qtd") {
+		Write !, "Foram comprados apenas "_^produto("nome", "qtd")_" "_^produto("nome")_"(s)." 
+		Set ^produto("nome", "qtd") = 0
+		
+	}
+
+	Else {
+		Set ^produto("nome", "qtd") = ^produto("nome", "qtd") - comprados
+	}
+	
+	Write !, "Agora há "_^produto("nome", "qtd")_" "_^produto("nome")_"(s) restantes."
 	Quit
 }
