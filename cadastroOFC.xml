@@ -1,0 +1,1289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+-<Export ts="2022-06-22 15:44:55" zv="IRIS for Windows (x86-64) 2021.2.1 (Build 654U)" version="26" generator="IRIS">
+
+
+-<Routine timestamp="66282,55198.2494561" languagemode="0" type="MAC" name="cadastrarCliente">
+
+-<![CDATA[
+cadastrarCliente
+	Do inicio()
+
+ // formato:
+ // ^cliente(i)=nome^endereco^telefone^cpf^dataNascimento
+
+inicio()
+	NEW num
+ // Cabeçalho
+	Set tralha = "#######################################################################"
+	Set hora = $Zdatetime($Horolog, 4, 2) 
+	
+	Write !!, tralha
+	Write !, "#", ?70,                                       "#"
+	Write !, "#", ?27, "Cadastrar Cliente", ?70,             "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70,                                       "#"
+	
+	Write !, "#", " 1- Cadastrar novo cliente", ?70,         "#"
+	Write !, "#", " 2- Alterar cliente já cadastrado", ?70,  "#"
+	Write !, "#", " 0- Sair", ?70,                           "#"
+	Write !, "#", ?70,                                       "#"
+	
+	Read !, "# Entre com a opção desejada: ", num Write ?70, "#"
+	Write !, "#", ?70,                                       "#"
+	Write !, tralha
+
+	Hang .25
+ //	
+
+
+	Quit:'num
+	Do $Case(num, 1:novo, 2:alterar, :inicio)
+	GOTO inicio+1
+	
+	Quit
+	
+
+
+novo() public
+ // Cabeçalho
+ 	Set hora = $Zdatetime($Horolog, 4, 2) 
+	
+	Write !!, tralha
+	Write !, "#", ?70,                          "#"
+	Write !, "#", ?27, "Cadastrar Cliente", ?70,"#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70,                          "#"
+   //	
+	
+
+   // pede informações
+	Read !, "# Nome.............: ", nome
+	Write ?70, "#" Hang .25
+	
+	Read !, "# Endereço.........: ", end
+	Write ?70, "#" Hang .25
+	
+	Read !, "# Telefone.........: ", tel
+	Write ?70, "#" Hang .25
+	
+	Read !, "# CPF..............: ", cpf
+	Write ?70, "#" Hang .25 
+	
+	Read !, "# Data Nascimento..: ", nasc
+	Write ?70, "#"  Hang .25
+	
+	Write !, "#", ?70, "#"
+	Write !, tralha, !
+	Hang .25
+ //
+
+ // se nenhum campo for preenchido, volta para a tela inicial
+	If ((nome = "") && (end = "") && (tel = "") && (cpf = "") && (nasc = "")) { Quit }
+	
+	
+ // se os campos forem preenchidos, checa consistência dos dados e cadastra, se confirmados
+ 	// se não for confirmado ou se algum dado não for consistente, recomeça o cadastro
+	Do consistencia()
+	If ($DATA(nome) && $DATA(end) && $DATA(tel) && $DATA(cpf) && $DATA(nasc)) {
+		Read !!, "Enter para confirmar ", enter
+		GOTO:'(""[enter) novo+1
+		Do cadastra()
+		}
+	Else { // recomeça o cadastro se algum campo não for preenchido ou se ofr inválido
+		Write !, $Select('$Data(nome):"Nome inválido", '$Data(end):"Endereço inválido", '$Data(tel):"Telefone inválido", '$Data(cpf):"CPF inválido", '$Data(nasc):"Data de Nascimento inválida")
+		GOTO novo+1
+	}
+	
+	Quit
+
+
+
+alterar() public
+ // Cabeçalho
+	Set hora = $Zdatetime($Horolog, 4, 2) 
+	
+	Write !!, tralha
+	Write !, "#", ?70, "#"
+	Write !, "#", ?27, "Cadastrar Cliente", ?70, "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70, "#"
+ //	
+	
+	
+ // pede informações para o cadastro
+	Read !, "# Qual cliente deseja alterar? ", cliNum
+	If (cliNum = "")||'$DATA(^cliente(cliNum)) { Write !, tralha, !!, "Cliente inválido" Hang .5 GOTO alterar+1 }
+		// recomeça se o subscript do cliente selecionado não existir
+	Write " - ", $Piece(^cliente(cliNum), "^", 1), ?70, "#" Hang .25
+		
+		
+	Read !, "# Qual informação deseja alterar? ", qinfo
+	Write " - ", $Case(qinfo, 1:"Nome", 2:"Endereço", 3:"Telefone", 4:"CPF", 5:"Nascimento", :"Nada será alterado"), ?70, "#" Hang .25
+	
+	
+	
+ // aqui as informações para alteração serão recebidas e consistências checadas	
+	If (qinfo = 3) { // info de telefone
+		Read !, "# Digite a nova informação: +55 (",  ddd#2,") ", tel1#5, "-", tel2#4
+		If '((ddd?2N) && (tel1?5N) && (tel2?4N)){ Write !, tralha, !, "Telefone inválido" GOTO alterar+1 }
+		Set info = "("_ddd_") "_tel1_"-"_tel2
+		Write ?70, "#" Hang .5
+	}
+		
+	Elseif (qinfo = 4) { // info de cpf
+		Read:(qinfo = 4) !, "# Digite a nova informação: ", dig1#3, ".", dig2#3, ".", dig3#3, "-", dig4#2
+		If '((dig1?3N) && (dig2?3N) && (dig3?3N) && (dig4?2N)){ Write !, tralha, !, "CPF inválido" GOTO alterar+1 }
+		Set:(qinfo = 4) info = dig1_"."_dig2_"."_dig3_"-"_dig4
+		Write ?70, "#" Hang .5
+	}
+	
+	Elseif (qinfo = 5) { // info de data
+		Read:(qinfo = 5) !, "# Digite a nova informação: ", dia#2, "/", mes#2, "/", ano#4
+		Set:(qinfo = 5) info = dia_"/"_mes_"/"_ano
+		Try { Set aux = $Zdateh(info, 4) }
+		Catch err { Write !, tralha, !, "Data inválida" GOTO alterar+1 }
+		Write ?70, "#" Hang .5
+	}
+		
+	Else { // outras info
+		Read !, "# Digite a nova informação: ", info
+		Write ?70, "#" Hang .5	
+	}
+	
+	
+	Write !, "#", ?70, "#"
+	Write !, tralha, !
+ //
+ 
+ 
+ // volta para tela inicial se alguma entrada não for preenchida
+	If (cliNum = "")||(info = "")||(qinfo = "") { Quit }
+	
+	
+ // caso desista, salva a informação antes de alterar
+	Set aux = $Piece(^cliente(cliNum), "^", qinfo)
+ 	Set $Piece(^cliente(cliNum), "^", qinfo) = info
+	
+	
+ // mostrar alteração
+	Write !!, "|   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
+	Set nome = $Piece(^cliente(cliNum), "^", 1)
+	Set end = $Piece(^cliente(cliNum), "^", 2)
+	If $LENGTH(nome) > 10 { Set $Extract(nome,7, *) = "..."}
+	If $LENGTH(end) > 18 { Set $Extract(end,15, *) = "..."}
+	Write !, ?1, nome, ?12, end, ?32, $Piece(^cliente(cliNum), "^", 3), ?49, $Piece(^cliente(cliNum), "^", 4), ?65, $Piece(^cliente(cliNum), "^", 5)
+	
+	
+	Read !!, "Enter para confirmar ", enter 
+	If '(""[enter) {
+		Set $Piece(^cliente(cliNum), "^", qinfo) = aux
+		GOTO alterar+1
+	}
+	
+	Quit
+	
+	
+
+
+
+cadastra() public
+	Set ID = $Order(^cliente(""), -1)
+	Do $Increment(ID)
+	Set ^cliente(ID) = nome_"^"_end_"^"_tel_"^"_cpf_"^"_nasc
+	
+	Quit
+	
+
+consistencia() public
+  // arrumar formatos
+   // telefone 
+	Set tel = $Translate($Get(tel), " -()", "") 
+	Set:$DATA(tel) tel = "("_$Extract(tel, 1,2)_") "_$Extract(tel, 3,7)_"-"_$Extract(tel, 8,11)
+	
+   // CPF
+	If $Get(cpf)?11N { Set cpf = $Extract(cpf,1,3)_"."_$Extract(cpf,4,6)_"."_$Extract(cpf,7,9)_"-"_$Extract(cpf,10,11)  }
+	
+   // Data de Nascimento
+	If $Piece($Get(nasc), "/", 1)?1N { Set nasc = "0"_nasc }
+	If $Piece($Get(nasc), "/", 2)?1N { Set $Piece(nasc, "/", 2) = "0"_$Piece($Get(nasc), "/", 2) }
+	
+	Try { Set aux = $Zdateh(nasc, 4) }
+	Catch err { Kill nasc }
+	
+	Kill:'(nome?1.ACP) nome
+	Kill:'(end?1.APN) end
+	Kill:'(tel?1(1"("2N1") ",2N1" ",2N)1(5N1"-"4N,5N1" "4N,9N)) tel
+	Kill:'(cpf?1(3N1"."3N1"."3N1"-"2N,11N)) cpf
+
+]]>
+</Routine>
+
+
+-<Routine timestamp="66282,34964.1924403" languagemode="0" type="MAC" name="cadastrarProduto">
+
+-<![CDATA[
+cadastrarProduto
+ // formato:
+ // ^produto(i)=nome^descricao^preco
+ 
+ 	Do inicio()
+ 	
+inicio()
+ // Cabeçalho
+	Set tralha = "#######################################################################"
+	Set hora = $Zdatetime($Horolog, 4, 2) 
+
+	Write !!, tralha
+	Write !, "#", ?70, "#"
+	Write !, "#", ?26, "Cadastrar Produto", ?70, "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#",?70, "#"
+   //
+
+
+   // pede informações para cadastro
+	Read !, "# Nome.............: ", nome
+	Write ?70, "#"
+	Read !, "# Descrição........: ", desc
+	Write ?70, "#"
+	Read !, "# Preço............: ", preco
+	Write ?70, "#"
+
+	Write !, "#", ?70, "#"
+	Write !, tralha Hang .5
+ //
+ 	
+	
+ // volta para tela inicial se nenhuma entrada for preenchida
+	If ((nome = "") && (desc = "") && (preco = "")) { Quit }
+	
+	
+ // se os campos forem preenchidos, checa consistência dos dados e cadastra
+	Do consistencia()
+	If ($DATA(nome) && $DATA(desc) && $DATA(preco)) {
+		Do cadastra()
+		}
+	Else { // recomeça o cadastro se algum campo não for preenchido ou se for inválido
+		Write !, $Select('$Data(nome):"Nome inválido", '$Data(desc):"Descrição inválida", '$Data(preco):"Preço inválido")
+		GOTO inicio+1
+	}
+	
+	Quit
+
+
+
+
+
+cadastra() public
+	Set ID = $Order(^produto(""), -1)
+	Do $Increment(ID)
+	Set ^produto(ID) = nome_"^"_desc_"^"_preco
+	
+	Quit
+	
+	
+	
+	
+consistencia() public	
+	Kill:(nome="") nome
+	If '(preco?.NP) || (preco < 0) || (preco = "") { Kill preco }
+	Else { Set preco = $FNUMBER(preco, "L", 2) } // arruma o formato do preço
+	
+	Quit
+]]>
+</Routine>
+
+
+-<Routine timestamp="66282,39627.0603983" languagemode="0" type="MAC" name="cadastroOFC">
+
+-<![CDATA[
+cadastroOFC
+
+inicio
+ // cabeçalho
+	Set tralha = "#######################################################################"
+	Set hora = $Zdatetime($Horolog, 4, 2)
+	
+	Write !!!, tralha
+	Write !, "#", ?70,                                       "#"
+	Write !, "#", ?25 ,"Solicitação de Pedido", ?70,         "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", " Menu", ?70,                              "#"
+	Write !, "#", " 1- Cadastrar Cliente", ?70,              "#"
+	Write !, "#", " 2- Cadastrar Produto",?70,               "#"
+	Write !, "#", " 3- Realizar Pedido", ?70,                "#"
+	Write !, "#", " 4- Exibir Clientes", ?70,                "#"
+	Write !, "#", " 5- Exibir Produtos", ?70,                "#"
+	Write !, "#", " 6- Exibir Pedidos", ?70,                 "#"
+	Write !, "#", " 0- Sair", ?70,                           "#"
+	Write !, "#", ?70,                                       "#"
+	
+	Read !, "# Entre com a opção desejada: ", num Write ?70, "#"
+	
+	Write !, "#", ?70,                                       "#"
+	Write !, tralha
+
+	Hang .25
+ //	
+ 
+	
+	Set:'num $Halt = "sairHalt^cadastroOFC"
+	Halt:'num
+	Do $Case(num, 1:cadastrarCliente, 2:cadastrarProduto, 3:realizarPedido, 4:exibirClientes, 5:exibirProdutos, 6:exibirPedidos, :inicio)
+	
+	Quit
+	
+	
+ // chamadas das rotinas ou do halt
+cadastrarCliente
+	Do ^cadastrarCliente
+	GOTO inicio
+	Quit
+	
+cadastrarProduto
+	Do ^cadastrarProduto
+	GOTO inicio
+	Quit
+	
+realizarPedido
+	Do ^realizarPedido
+	GOTO inicio
+	Quit
+
+
+exibirClientes
+	Do ^exibirClientes
+	GOTO inicio
+	Quit
+	
+exibirProdutos
+	Do ^exibirProdutos
+	GOTO inicio
+	Quit
+	
+exibirPedidos
+	Do ^exibirPedidos
+	GOTO inicio
+	Quit
+
+
+
+sairHalt
+	Read !!, "Tem certeza que deseja sair? ", ans
+	If "SIMsimSim"[ans { Write !, "Ok" Hang .25 HALT }
+	Else { GOTO inicio }
+	Quit
+]]>
+</Routine>
+
+
+-<Routine timestamp="66282,47619.1173749" languagemode="0" type="MAC" name="exibirClientes">
+
+-<![CDATA[
+exibirClientes
+
+inicio
+ // Cabeçalho
+	Set tralha = "#######################################################################"
+	Set hora = $Zdatetime($Horolog, 4, 2) 
+	
+	Write !!, tralha
+	Write !, "#", ?70, "#"
+	Write !, "#", ?27, "Exibir Clientes", ?70, "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70, "#"
+	
+
+	Write !, "#", " 1- Exibir todos", ?70, "#"
+	Write !, "#", " 2- Pesquisar por ID", ?70, "#"
+	Write !, "#", " 3- Pesquisar por nome", ?70, "#"
+	Write !, "#", " 4- Pesquisar por CPF", ?70, "#"
+	Write !, "#", " 5- Pesquisar por idade", ?70, "#"
+	Write !, "#", " 0- Sair", ?70, "#"
+	Write !, "#", ?70, "#"
+	
+	Read !, "# Entre com a opção desejada: ", num
+	Write ?70, "#"
+	Write !, "#", ?70, "#"
+	Write !, tralha
+ //
+ 
+	Hang .25
+	
+	Quit:'num
+	Do $Case(num, 1:todos, 2:porID, 3:porNome, 4:porCPF, 5:porIdade, :inicio)
+	
+	Quit
+
+
+
+
+
+
+todos()
+ // itera e printa todos no array
+	Set count = $Order(^cliente(""), 1)
+	// cabeçalho antes da iteração
+	Write !!, "|   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
+	
+	While (count '= "") {
+	  // se nome e endereço forem muito grandes corta o que vai aparecer no print
+		Set nome = $Piece(^cliente(count), "^", 1)
+		Set end = $Piece(^cliente(count), "^", 2)
+		If $LENGTH(nome) > 11 { Set $Extract(nome,8, *) = "..."}
+		If $LENGTH(end) > 19 { Set $Extract(end,16, *) = "..."}
+		
+	  // printa as informações
+		Write !, ?1, nome
+		Write ?12, end
+		Write ?32, $Piece(^cliente(count), "^", 3)
+		Write ?49, $Piece(^cliente(count), "^", 4)
+		Write ?65, $Piece(^cliente(count), "^", 5)
+	  
+	  // próxima iteração
+		Set count = $Order(^cliente(count), 1)
+	}
+	
+	
+   // ler infos completas
+	Read !!, " Expandir informações de algum cliente? ", ans
+	GOTO:('ans) inicio 
+	
+	If $Data(^cliente(ans)) {
+		Write !!, tralha
+		Write !,"#", ?70, "#"
+		Write !, "# Nome.............: ", $Piece(^cliente(ans), "^", 1), ?70, "#"
+		Write !, "# Endereço.........: ", $Piece(^cliente(ans), "^", 2), ?70, "#"
+		Write !, "# Telefone.........: ", $Piece(^cliente(ans), "^", 3), ?70, "#"
+		Write !, "# CPF..............: ", $Piece(^cliente(ans), "^", 4), ?70, "#" 
+		Write !, "# Data Nascimento..: ", $Piece(^cliente(ans), "^", 5), ?70, "#"
+		Write !,"#", ?70, "#"
+		Write !, tralha
+	}
+	 
+	
+	Read !, enter // espera interação do usuário antes de seguir 
+	GOTO inicio
+	Quit
+	
+	
+	
+porID()
+ // Cabeçalho
+	Set hora = $Zdatetime($Horolog, 4, 2)
+	
+	Write !!, tralha
+	Write !, "#", ?70, "#"
+	Write !, "#", ?27, "Exibir Clientes", ?70, "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70, "#"
+	
+	Read !, "# Digite o ID: ", num
+	Write ?70, "#"
+	Write !, "#", ?70, "#"
+	Write !, tralha
+ //
+ 
+ 
+ // Print
+	Write !!, "|   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
+	
+	GOTO:(num="") inicio // volta se o ID for nulo 
+	If '$Data(^cliente(num)) { GOTO porID+30 } // se o ID não corresponde a nenhum cliente mostra lista vazia
+	
+   // arruma tamanhos de strings
+	Set nome = $Piece(^cliente(num), "^", 1)
+	Set end = $Piece(^cliente(num), "^", 2)
+	If $LENGTH(nome) > 11 { Set $Extract(nome,8, *) = "..."}
+	If $LENGTH(end) > 19 { Set $Extract(end,16, *) = "..."}
+
+   // mostra informações do cliente selecionado
+	Write !, ?1, nome
+	Write ?12, end
+	Write ?32, $Piece(^cliente(num), "^", 3)
+	Write ?49, $Piece(^cliente(num), "^", 4)
+	Write ?65, $Piece(^cliente(num), "^", 5)
+ //
+	
+	Read !, enter // espera interação do usuário para seguir
+	GOTO inicio	
+	
+	Quit
+
+
+
+
+
+porNome()
+ // Cabeçalho
+	Set hora = $Zdatetime($Horolog, 4, 2)
+	
+	Write !!, tralha
+	Write !, "#", ?70, "#"
+	Write !, "#", ?27, "Exibir Clientes", ?70, "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70, "#"
+	
+	Read !, "# Digite o Nome: ", nameSearch
+	Write ?70, "#"
+	Write !, "#", ?70, "#"
+	Write !, tralha
+ //
+	
+	
+	
+ // Print
+	Set count = $Order(^cliente(""), 1)
+	Write !!, "|   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
+	While (count '= "") {
+		
+		If $Piece(^cliente(count), "^", 1)[nameSearch { // só entra para o print se tiver o nome ou a parte pesquisada
+		  // arruma tamanhos de strings
+			Set nome = $Piece(^cliente(count), "^", 1)
+			Set end = $Piece(^cliente(count), "^", 2)
+			If $LENGTH(nome) > 11 { Set $Extract(nome,8, *) = "..."}
+			If $LENGTH(end) > 19 { Set $Extract(end,16, *) = "..."}
+		  
+		  // printa
+			Write !, ?1, nome
+			Write ?12, end
+			Write ?32, $Piece(^cliente(count), "^", 3)
+			Write ?49, $Piece(^cliente(count), "^", 4)
+			Write ?65, $Piece(^cliente(count), "^", 5)
+		}
+	  // próxima iteração
+		Set count = $Order(^cliente(count), 1)
+		
+	}
+	
+	
+	Read !, enter // espera interação do usuário para seguir
+	GOTO inicio
+	Quit
+	
+
+
+
+
+
+
+
+porCPF()
+ // Cabeçalho
+	Set hora = $Zdatetime($Horolog, 4, 2) 
+	
+	Write !!, tralha
+	Write !, "#", ?70, "#"
+	Write !, "#", ?27, "Exibir Clientes", ?70, "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70, "#"
+	
+	Read !, "# Digite o CPF: ",cpfSearch
+	Write ?70, "#"
+	Write !, "#", ?70, "#"
+	Write !, tralha
+ //
+ 
+ 
+ // Print 	
+	Set count = $Order(^cliente(""), 1)
+	Write !!, "|   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
+	While (count '= "") {
+		
+		If $Piece(^cliente(count), "^", 4)[cpfSearch { // só entra para o print se tiver o CPF ou a parte pesquisada
+		  // arruma tamanhos
+			Set nome = $Piece(^cliente(count), "^", 1)
+			Set end = $Piece(^cliente(count), "^", 2)
+			If $LENGTH(nome) > 11 { Set $Extract(nome,8, *) = "..."}
+			If $LENGTH(end) > 19 { Set $Extract(end,16, *) = "..."}
+			
+		  // printa	
+			Write !, ?1, nome
+			Write ?12, end
+			Write ?32, $Piece(^cliente(count), "^", 3)
+			Write ?49, $Piece(^cliente(count), "^", 4)
+			Write ?65, $Piece(^cliente(count), "^", 5)
+		}
+	  // pxm iteração
+		Set count = $Order(^cliente(count), 1)
+		
+	}
+	
+	Read !, enter // espera interação do usuário para seguir
+	GOTO inicio
+	Quit
+
+
+
+
+
+
+porIdade()
+ // Cabeçalho
+	Set hora = $Zdatetime($Horolog, 4, 2) 
+	
+	Write !!, tralha
+	Write !, "#", ?70, "#"
+	Write !, "#", ?27, "Exibir Clientes", ?70, "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70, "#"
+	
+	Read !, "# Digite a Idade: ", ageSearch
+	Write ?70, "#"
+	Write !, "#", ?70, "#"
+	Write !, tralha
+ //
+ 
+	
+ // Print	
+	Set count = $Order(^cliente(""), 1)
+	Write !!, "|   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
+	While (count '= "") {
+		
+		Set idade = (+$Horolog - $Zdateh($Piece(^cliente(count), "^", 5),4)) / 365 // calcula a idade
+		If ageSearch >= 0 { Set bool = idade '< ageSearch } // se a entrada for positiva, aceita todas as idades acima da escolhida
+		Elseif ageSearch < 0 { Set bool = idade '> -ageSearch } // se a entrada for negativa, aceita todas as idades abaixo da escolhida
+		
+		If bool { // só entra no print idades escolhidas
+		  // arruma tamanhos de strings
+			Set nome = $Piece(^cliente(count), "^", 1)
+			Set end = $Piece(^cliente(count), "^", 2)
+			If $LENGTH(nome) > 11 { Set $Extract(nome,8, *) = "..."}
+			If $LENGTH(end) > 19 { Set $Extract(end,16, *) = "..."}
+			
+		  // printa
+			Write !, ?1, nome
+			Write ?12, end
+			Write ?32, $Piece(^cliente(count), "^", 3)
+			Write ?49, $Piece(^cliente(count), "^", 4)
+			Write ?65, $Piece(^cliente(count), "^", 5)
+		}
+	  // pxm iteração
+		Set count = $Order(^cliente(count), 1)
+		
+	}
+	
+	Read !, enter // espera interação do usuário para seguir
+	GOTO inicio
+	Quit
+]]>
+</Routine>
+
+
+-<Routine timestamp="66282,54344.0552175" languagemode="0" type="MAC" name="exibirPedidos">
+
+-<![CDATA[
+exibirPedidos
+
+
+inicio
+ // Cabeçalho
+	Set tralha = "#######################################################################"
+	Set hora = $Zdatetime($Horolog, 4, 2)
+	
+	Write !!, tralha
+	Write !, "#", ?70, "#"
+	Write !, "#", ?27, "Exibir Pedidos", ?70, "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70, "#"
+	
+
+	Write !, "#", " 1- Exibir todos", ?70, "#"
+	Write !, "#", " 2- Pesquisar por ID", ?70, "#"
+	Write !, "#", " 3- Pesquisar por cliente", ?70, "#"
+	Write !, "#", " 4- Pesquisar por produto", ?70, "#"
+	Write !, "#", " 5- Pesquisar por quantidade", ?70, "#"
+	Write !, "#", " 0- Sair", ?70, "#"
+	Write !, "#", ?70, "#"
+	
+	Read !, "# Entre com a opção desejada: ", num
+	Write ?70, "#"
+	Write !, "#", ?70, "#"
+	Write !, tralha
+	
+	Hang .25
+ //
+ 
+	
+	Quit:'num
+	Do $Case(num, 1:todos, 2:porID, 3:porCliente, 4:porProduto, 5:porQtd, :inicio)
+	
+	Quit
+	
+	
+todos()
+  // itera e printa todos no array
+	Set count = $Order(^pedido(""), 1)
+	// cabeçalho antes da iteração
+	Write !!, ?9, "|     Cliente     |     Produto     |  Quantidade  |"
+	
+	While (count '= "") { 
+	  // se nomes forem muito grandes corta o que vai aparecer no print
+		Set cli = $Piece(^pedido(count), "^", 1), cliString = $Piece(^cliente(cli), "^", 1)
+		Set prod = $Piece(^pedido(count), "^", 2), prodString = $Piece(^produto(prod), "^", 1)
+		If $LENGTH(cliString) > 14 { Set $Extract(cliString,11, *) = "..."}
+		If $LENGTH(prodString) > 14 { Set $Extract(prodString,10, *) = "..."}
+
+	  // printa as informações
+		Write !, "Pedido "_count_": "
+		Write ?10, cliString_" ("_cli_")"
+		Write ?28, prodString_" ("_prod_")"
+		Write ?46, $Justify($Piece(^pedido(count), "^", 3), 14)
+		
+	  // próxima iteração
+		Set count = $Order(^pedido(count), 1)
+	}
+	
+   // ler infos completas
+	Read !!, " Expandir informações de algum pedido? ", ans
+	GOTO:('ans) inicio 
+	
+	If $Data(^pedido(ans)) {
+		
+		Set cli = $Piece(^pedido(ans), "^", 1), cliString = $Piece(^cliente(cli), "^", 1)
+		Set prod = $Piece(^pedido(ans), "^", 2), prodString = $Piece(^produto(prod), "^", 1)
+		
+		Write !!, tralha
+		Write !,"#", ?70, "#"
+		Write !, "# Cliente......: ", cliString_" ("_cli_")", ?70, "#"
+		Write !, "# Produto......: ", prodString_" ("_prod_")", ?70, "#"
+		Write !, "# Quantidade...: ", $Piece(^pedido(ans), "^", 3), ?70, "#"
+		Write !,"#", ?70, "#"
+		Write !, tralha
+	}
+	 
+	
+	
+	Read !, enter // espera interação do usuário antes de seguir
+	GOTO inicio
+	Quit
+
+
+porID()
+ // Cabeçalho
+	Set hora = $Zdatetime($Horolog, 4, 2)
+	
+	Write !!, tralha
+	Write !, "#", ?70, "#"
+	Write !, "#", ?27, "Exibir Pedidos", ?70, "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70, "#"
+	
+	Read !, "# Digite o ID: ", num
+	Write ?70, "#"
+	Write !, "#", ?70, "#"
+	Write !, tralha
+ //
+ 
+ 
+ // Print
+	Write !!, ?9, "|     Cliente     |     Produto     |  Quantidade  |"
+	
+	GOTO:(num="") inicio // volta se o ID for nulo 
+	If '$Data(^pedido(num)) { GOTO porID+28 }  // se o ID não corresponde a nenhum cliente mostra lista vazia
+
+   // arruma tamanhos de strings
+	Set cli = $Piece(^pedido(num), "^", 1), cliString = $Piece(^cliente(cli), "^", 1)
+	Set prod = $Piece(^pedido(num), "^", 2), prodString = $Piece(^produto(prod), "^", 1)
+	If $LENGTH(cliString) > 13 { Set $Extract(cliString,9, *) = "..."}
+	If $LENGTH(prodString) > 14 { Set $Extract(prodString,10, *) = "..."}
+
+   // mostra informações do cliente selecionado
+	Write !, "Pedido "_num_": "
+	Write ?10, cliString_" ("_cli_")"
+	Write ?28, prodString_" ("_prod_")"
+	Write ?46, $Justify($Piece(^pedido(num), "^", 3), 14)
+ //
+	
+	Read !, enter // espera interação do usuário para seguir
+	GOTO inicio
+	
+	Quit
+
+porCliente()
+ // Cabeçalho
+	Set hora = $Zdatetime($Horolog, 4, 2)
+	
+	Write !!, tralha
+	Write !, "#", ?70, "#"
+	Write !, "#", ?27, "Exibir Pedidos", ?70, "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70, "#"
+	
+	Read !, "# Digite o Cliente: ", cliente
+	Write ?70, "#"
+	Write !, "#", ?70, "#"
+	Write !, tralha
+ //
+ 
+ // Print
+	Set count = $Order(^pedido(""), 1)
+	Write !!, ?9, "|     Cliente     |     Produto     |  Quantidade  |"
+	
+	While (count '= "") {
+		If $Zconvert($Piece(^cliente($Piece(^pedido(count), "^", 1)), "^", 1), "l")[$Zconvert(cliente, "l") { // só entra para o print se tiver o nome ou a parte pesquisada
+		  // arruma tamanhos de strings			
+			Set cli = $Piece(^pedido(count), "^", 1), cliString = $Piece(^cliente(cli), "^", 1)
+			Set prod = $Piece(^pedido(count), "^", 2), prodString = $Piece(^produto(prod), "^", 1)
+			If $LENGTH(cliString) > 13 { Set $Extract(cliString,9, *) = "..."}
+			If $LENGTH(prodString) > 14 { Set $Extract(prodString,10, *) = "..."}
+
+		  // printa
+			Write !, "Pedido "_count_": "
+			Write ?10, cliString_" ("_cli_")"
+			Write ?28, prodString_" ("_prod_")"
+			Write ?46, $Justify($Piece(^pedido(count), "^", 3), 14)
+		}
+	  // próxima iteração
+		Set count = $Order(^pedido(count), 1)
+	}
+
+
+	Read !, enter // espera interação do usuário para seguir
+	GOTO inicio
+	
+	Quit
+
+
+
+porProduto()
+ // Cabeçalho
+	Set hora = $Zdatetime($Horolog, 4, 2)
+	
+	Write !!, tralha
+	Write !, "#", ?70, "#"
+	Write !, "#", ?27, "Exibir Pedidos", ?70, "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70, "#"
+	
+	Read !, "# Digite o Produto: ", produto
+	Write ?70, "#"
+	Write !, "#", ?70, "#"
+	Write !, tralha
+ //
+ 
+ 
+ // Print
+	Set count = $Order(^pedido(""), 1)
+	Write !!, ?9, "|     Cliente     |     Produto     |  Quantidade  |"
+	
+	While (count '= "") {
+		If $Zconvert($Piece(^produto($Piece(^pedido(count), "^", 2)), "^", 1), "l")[$Zconvert(produto, "l") { // só entra para o print se tiver o nome ou a parte pesquisada
+		  // arruma tamanhos de strings
+			Set cli = $Piece(^pedido(count), "^", 1), cliString = $Piece(^cliente(cli), "^", 1)
+			Set prod = $Piece(^pedido(count), "^", 2), prodString = $Piece(^produto(prod), "^", 1)
+			If $LENGTH(cliString) > 13 { Set $Extract(cliString,9, *) = "..."}
+			If $LENGTH(prodString) > 14 { Set $Extract(prodString,10, *) = "..."}
+
+		  // print
+			Write !, "Pedido "_count_": "
+			Write ?10, cliString_" ("_cli_")"
+			Write ?28, prodString_" ("_prod_")"
+			Write ?46, $Justify($Piece(^pedido(count), "^", 3), 14)
+		}
+	  // pxm iteração
+		Set count = $Order(^pedido(count), 1)	
+	}
+
+
+	Read !, enter // espera interação do usuário para seguir
+	GOTO inicio
+	
+	Quit
+
+
+
+
+porQtd()
+ // Cabeçalho
+	Set hora = $Zdatetime($Horolog, 4, 2)
+	
+	Write !!, tralha
+	Write !, "#", ?70, "#"
+	Write !, "#", ?27, "Exibir Pedidos", ?70, "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70, "#"
+	
+	Read !, "# Digite a quantidade: ", qtdSearch
+	Write ?70, "#"
+	Write !, "#", ?70, "#"
+	Write !, tralha
+ //
+	
+
+ // Print
+	Set count = $Order(^pedido(""), 1)
+	Write !!, ?9, "|     Cliente     |     Produto     |  Quantidade  |"
+	
+	While (count '= "") {
+	  // Define se vai procurar quantidades abaixo ou acima do selecionado
+		If qtdSearch >= 0 { Set bool = $Piece(^pedido(count), "^", 3) '< qtdSearch }
+		Elseif qtdSearch < 0 { Set bool = $Piece(^pedido(count), "^", 3) '> -qtdSearch }
+		
+		If bool {
+		  // arruma tamanhos das strings
+			Set cli = $Piece(^pedido(count), "^", 1), cliString = $Piece(^cliente(cli), "^", 1)
+			Set prod = $Piece(^pedido(count), "^", 2), prodString = $Piece(^produto(prod), "^", 1)
+			If $LENGTH(cliString) > 13 { Set $Extract(cliString,9, *) = "..."}
+			If $LENGTH(prodString) > 14 { Set $Extract(prodString,10, *) = "..."}
+
+		  // printa
+			Write !, "Pedido "_count_": "
+			Write ?10, cliString_" ("_cli_")"
+			Write ?28, prodString_" ("_prod_")"
+			Write ?46, $Justify($Piece(^pedido(count), "^", 3), 14)
+		}
+	  // pxm iteração
+		Set count = $Order(^pedido(count), 1)
+	}
+	
+	
+	Read !, enter // espera interação do usuário para seguir
+	GOTO inicio
+	
+	Quit
+]]>
+</Routine>
+
+
+-<Routine timestamp="66282,53061.5524889" languagemode="0" type="MAC" name="exibirProdutos">
+
+-<![CDATA[
+exibirProdutos
+
+
+inicio
+ // Cabeçalho
+	Set tralha = "#######################################################################"
+	Set hora = $Zdatetime($Horolog, 4, 2) 
+	
+	Write !!, tralha
+	Write !, "#", ?70,                                 "#"
+	Write !, "#", ?27, "Exibir Produtos", ?70,         "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70,                                 "#"
+
+	Write !, "#", " 1- Exibir todos", ?70,             "#"
+	Write !, "#", " 2- Pesquisar por ID", ?70,         "#"
+	Write !, "#", " 3- Pesquisar por nome", ?70,       "#"
+	Write !, "#", " 4- Pesquisar por preço", ?70,      "#"
+	Write !, "#", " 0- Sair", ?70,                     "#"
+	Write !, "#", ?70,                                 "#"
+	
+	Read !, "# Entre com a opção desejada: ", num,?70, "#"
+	Write !, "#",?70,                                  "#"
+	Write !, tralha
+	
+	Hang .25
+ //
+
+	
+	Quit:'num
+	Do $Case(num, 1:todos, 2:porID, 3:porNome, 4:porPreco, :inicio)
+	
+	Quit
+
+
+
+todos()
+  // itera e printa todos no array
+	Set count = $Order(^produto(""), 1)
+	// cabeçalho antes da iteração
+	Write !!, $Justify("|     Nome     |            Descrição            |  Preço  |", 70)
+	
+	While (count '= "") {
+	  // se nome e descrição forem muito grandes corta o que vai aparecer no print
+		Set nome = $Piece(^produto(count), "^", 1)
+		Set desc = $Piece(^produto(count), "^", 2)
+		If $LENGTH(nome) > 15 { Set $Extract(nome,12, *) = "..."}
+		If $LENGTH(desc) > 34 { Set $Extract(desc,31, *) = "..."}
+		
+		
+	  // printa as informações
+		Write !, "Produto "_count_": "
+		Write ?10, nome
+		Write ?26, desc
+		Write ?60, $Justify($Piece(^produto(count), "^", 3), 9)
+		
+	  // próxima iteração
+		Set count = $Order(^produto(count), 1)
+	}
+	
+   // ler infos completas
+	Read !!, " Expandir informações de algum produto? ", ans
+	GOTO:('ans) inicio 
+	
+	If $Data(^produto(ans)) {
+		Write !!, tralha
+		Write !,"#", ?70, "#"
+		Write !, "# Nome........: ", $Piece(^produto(ans), "^", 1), ?70, "#"
+		Write !, "# Descrição...: ", $Piece(^produto(ans), "^", 2), ?70, "#"
+		Write !, "# Preço.......: ", $Piece(^produto(ans), "^", 3), ?70, "#"
+		Write !,"#", ?70, "#"
+		Write !, tralha
+	}
+	 
+	
+	Read !, enter // espera interação do usuário antes de seguir
+	GOTO inicio
+	Quit
+
+
+porID()
+ // Cabeçalho
+	Set hora = $Zdatetime($Horolog, 4, 2) 
+	
+	Write !!, tralha
+	Write !, "#", ?70, "#"
+	Write !, "#", ?27, "Exibir Produtos", ?70, "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70, "#"
+	
+	Read !, "# Digite o ID: ", num
+	Write ?70, "#"
+	Write !, "#", ?70, "#"
+	Write !, tralha
+ //
+ 
+ 
+ // Print
+	Write !!, $Justify("|     Nome     |            Descrição            |  Preço  |", 70)
+	
+	GOTO:(num="") inicio // volta se o ID for nulo 
+	If '$Data(^produto(num)) { GOTO porID+28 }  // se o ID não corresponde a nenhum cliente mostra lista vazia
+
+   // arruma tamanhos de strings
+	Set nome = $Piece(^produto(num), "^", 1)
+	Set desc = $Piece(^produto(num), "^", 2)
+	If $LENGTH(nome) > 15 { Set $Extract(nome,12, *) = "..."}
+	If $LENGTH(desc) > 34 { Set $Extract(desc,31, *) = "..."}
+
+   // mostra informações do cliente selecionado
+	Write !, "Produto "_num_": "
+		Write ?10, nome
+		Write ?26, desc
+		Write ?60, $Justify($Piece(^produto(num), "^", 3), 9)
+ //
+ 
+	
+	Read !, enter // espera interação do usuário para seguir
+	GOTO inicio	
+	
+	Quit
+
+porNome()
+ // Cabeçalho
+	Set hora = $Zdatetime($Horolog, 4, 2)
+	
+	Write !!, tralha
+	Write !, "#", ?70, "#"
+	Write !, "#", ?27, "Exibir Produtos", ?70, "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70, "#"
+	
+	Read !, "# Digite o nome: ", nameSearch
+	Write ?70, "#"
+	Write !, "#", ?70, "#"
+	Write !, tralha
+ //
+
+
+
+ // Print
+	Set count = $Order(^produto(""), 1)
+	Write !!, $Justify("|     Nome     |            Descrição            |  Preço  |", 70)
+	
+	While (count '= "") {
+		
+		If $Zconvert($Piece(^produto(count), "^", 1), "l")[$Zconvert(nameSearch, "l") { // só entra para o print se tiver o nome ou a parte pesquisada
+		  // arruma tamanhos de strings	
+			Set nome = $Piece(^produto(count), "^", 1)
+			Set desc = $Piece(^produto(count), "^", 2)
+			If $LENGTH(nome) > 15 { Set $Extract(nome,12, *) = "..."}
+			If $LENGTH(desc) > 34 { Set $Extract(desc,31, *) = "..."}
+		
+		  // printa
+			Write !, "Produto "_count_": "
+			Write ?10, nome
+			Write ?26, desc
+			Write ?60, $Justify($Piece(^produto(count), "^", 3), 9)
+		}
+	  // próxima iteração
+		Set count = $Order(^produto(count), 1)
+	}
+	
+	Read !, enter // espera interação do usuário para seguir
+	GOTO inicio
+	Quit
+
+
+
+porPreco()
+ // Cabeçalho
+	Set hora = $Zdatetime($Horolog, 4, 2)
+	
+	Write !!, tralha
+	Write !, "#", ?70, "#"
+	Write !, "#", ?27, "Exibir Produtos", ?70, "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70, "#"
+	
+	Read !, "# Digite o preço: ", priceSearch
+	Write ?70, "#"
+	Write !, "#", ?70, "#"
+	Write !, tralha
+ //
+	
+	
+ // Print
+	Set count = $Order(^produto(""), 1)
+	Write !!, $Justify("|     Nome     |            Descrição            |  Preço  |", 70)
+	
+	While (count '= "") {
+	  // Define se vai procurar preços abaixo ou acima do selecionado
+		If priceSearch >= 0 { Set bool = $Piece(^produto(count), "^", 3) '< priceSearch }
+		Elseif priceSearch < 0 { Set bool = $Piece(^produto(count), "^", 3) '> -priceSearch }
+		
+		If bool {
+		  // arruma tamanhos das strings
+			Set nome = $Piece(^produto(count), "^", 1)
+			Set desc = $Piece(^produto(count), "^", 2)
+			If $LENGTH(nome) > 15 { Set $Extract(nome,12, *) = "..."}
+			If $LENGTH(desc) > 34 { Set $Extract(desc,31, *) = "..."}
+			
+		  // printa
+			Write !, "Produto "_count_": "
+			Write ?10, nome
+			Write ?26, desc
+			Write ?60, $Justify($Piece(^produto(count), "^", 3), 9)
+		}
+	  // pxm iteração
+		Set count = $Order(^produto(count), 1)
+	}
+	
+	Read !, enter // espera interação do usuário para seguir
+	GOTO inicio
+	Quit
+
+]]>
+</Routine>
+
+
+-<Project name="heloisa20222106" LastModified="2022-06-21 15:38:17.4740345">
+
+
+-<Items>
+
+<ProjectItem type="MAC" name="cadastrarCliente.MAC"/>
+
+<ProjectItem type="MAC" name="cadastrarProduto.MAC"/>
+
+<ProjectItem type="MAC" name="cadastroOFC.MAC"/>
+
+<ProjectItem type="MAC" name="exibirClientes.MAC"/>
+
+<ProjectItem type="MAC" name="exibirPedidos.MAC"/>
+
+<ProjectItem type="MAC" name="exibirProdutos.MAC"/>
+
+<ProjectItem type="MAC" name="realizarPedido.MAC"/>
+
+</Items>
+
+</Project>
+
+
+-<Routine timestamp="66282,56087.718616" languagemode="0" type="MAC" name="realizarPedido">
+
+-<![CDATA[
+realizarPedido
+
+ // formatos:
+ // ^pedido(1)=cliente^produto^quantidade
+ 
+	Do inicio()
+
+inicio()
+ // Cabeçalho
+ 	Set tralha = "#######################################################################"
+	Set hora = $Zdatetime($Horolog, 4, 2) 
+	
+	Write !!, tralha
+	Write !, "#", ?70, "#"
+	Write !, "#", ?28, "Realizar Pedido", ?70, "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
+	Write !, "#", ?70, "#"
+   //
+ 
+ 
+   // pede informações para cadastro	
+	Read !, "# Cliente..........: ", cli
+	If ((cli '= "")&&$DATA(^cliente(cli))) { Write " - ", $Piece(^cliente(cli), "^", 1)}
+	Write ?70, "#"
+	Read !, "# Produto..........: ", prod
+	If ((prod '= "")&&$DATA(^produto(prod))) { Write " - ", $Piece(^produto(prod), "^", 1)}
+	Write ?70, "#"
+	Read !, "# Quantidade.......: ", qtd
+	Write ?70, "#"
+	
+	Write !, "#", ?70, "#"
+	Write !, tralha Hang .5
+ //
+	
+	
+ // volta para tela inicial se nenhuma entrada for preenchida
+	If ((cli = "") && (prod = "") && (qtd = "")) { Quit }
+	
+	
+ // se os campos forem preenchidos, checa consistência dos dados e cadastra
+	Do consistencia()
+	If ($DATA(cli) && $DATA(prod) && $DATA(qtd)) {
+		Do cadastra()
+		}
+	Else { // recomeça o cadastro se algum campo não for preenchido ou se for inválido
+		Write !, $Select('$Data(cli):"Cliente inválido", '$Data(prod):"Produto inválido", '$Data(qtd):"Quantidade inválida")
+		GOTO inicio+1
+	}
+	
+	Quit
+	
+	
+cadastra() public
+	Set ID = $Order(^pedido(""), -1)
+	Do $Increment(ID)
+	Set ^pedido(ID) = cli_"^"_prod_"^"_qtd
+	
+	Quit
+	
+	
+consistencia() public
+	Kill:((cli="")||'$DATA(^cliente(cli))) cli
+	Kill:((prod="")||'$DATA(^produto(prod))) prod
+	Kill:('(qtd?.N)||(qtd < 0)||(qtd="")) qtd
+	
+	Quit
+]]>
+</Routine>
+
+</Export>
