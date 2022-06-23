@@ -7,7 +7,7 @@ realizarPedido
 
 inicio()
  // Cabeçalho
- 	Set tralha = "#######################################################################"
+ //	Set tralha = "#######################################################################"
 	Set hora = $Zdatetime($Horolog, 4, 2) 
 	
 	Write !!, tralha
@@ -52,9 +52,11 @@ inicio()
 	
 	
 cadastra() public
+	Set cliString = $Piece(^cliente(cli), "^", 1)
+	Set prodString = $Piece(^produto(prod), "^", 1)
 	Set ID = $Order(^pedido(""), -1)
 	Do $Increment(ID)
-	Set ^pedido(ID) = cli_"^"_prod_"^"_qtd
+	Set ^pedido(ID) = "("_cli_") "_cliString_"^"_"("_prod_") "_prodString_"^"_qtd
 	
 	Quit
 	
