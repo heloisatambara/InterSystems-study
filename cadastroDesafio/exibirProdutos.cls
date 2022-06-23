@@ -3,7 +3,7 @@ exibirProdutos
 
 inicio
  // Cabeçalho
-	Set tralha = "#######################################################################"
+	//Set tralha = "#######################################################################"
 	Set hora = $Zdatetime($Horolog, 4, 2) 
 	
 	Write !!, tralha
@@ -37,31 +37,31 @@ inicio
 
 todos()
   // itera e printa todos no array
-	Set count = $Order(^produto(""), 1)
+	Set subs = $Order(^produto(""), 1)
 	// cabeçalho antes da iteração
 	Write !!, $Justify("|     Nome     |            Descrição            |  Preço  |", 70)
 	
-	While (count '= "") {
+	While (subs '= "") {
 	  // se nome e descrição forem muito grandes corta o que vai aparecer no print
-		Set nome = $Piece(^produto(count), "^", 1)
-		Set desc = $Piece(^produto(count), "^", 2)
+		Set nome = $Piece(^produto(subs), "^", 1)
+		Set desc = $Piece(^produto(subs), "^", 2)
 		If $LENGTH(nome) > 15 { Set $Extract(nome,12, *) = "..."}
 		If $LENGTH(desc) > 34 { Set $Extract(desc,31, *) = "..."}
 		
 		
 	  // printa as informações
-		Write !, "Produto "_count_": "
+		Write !, "Produto "_subs_": "
 		Write ?10, nome
 		Write ?26, desc
-		Write ?60, $Justify($Piece(^produto(count), "^", 3), 9)
+		Write ?60, $Justify($Piece(^produto(subs), "^", 3), 9)
 		
 	  // próxima iteração
-		Set count = $Order(^produto(count), 1)
+		Set subs = $Order(^produto(subs), 1)
 	}
 	
    // ler infos completas
 	Read !!, " Expandir informações de algum produto? ", ans
-	GOTO:('ans) inicio 
+	Quit:('ans) 
 	
 	If $Data(^produto(ans)) {
 		Write !!, tralha
@@ -75,7 +75,6 @@ todos()
 	 
 	
 	Read !, enter // espera interação do usuário antes de seguir
-	GOTO inicio
 	Quit
 
 
@@ -142,26 +141,26 @@ porNome()
 
 
  // Print
-	Set count = $Order(^produto(""), 1)
+	Set subs = $Order(^produto(""), 1)
 	Write !!, $Justify("|     Nome     |            Descrição            |  Preço  |", 70)
 	
-	While (count '= "") {
+	While (subs '= "") {
 		
-		If $Zconvert($Piece(^produto(count), "^", 1), "l")[$Zconvert(nameSearch, "l") { // só entra para o print se tiver o nome ou a parte pesquisada
+		If $Zconvert($Piece(^produto(subs), "^", 1), "l")[$Zconvert(nameSearch, "l") { // só entra para o print se tiver o nome ou a parte pesquisada
 		  // arruma tamanhos de strings	
-			Set nome = $Piece(^produto(count), "^", 1)
-			Set desc = $Piece(^produto(count), "^", 2)
+			Set nome = $Piece(^produto(subs), "^", 1)
+			Set desc = $Piece(^produto(subs), "^", 2)
 			If $LENGTH(nome) > 15 { Set $Extract(nome,12, *) = "..."}
 			If $LENGTH(desc) > 34 { Set $Extract(desc,31, *) = "..."}
 		
 		  // printa
-			Write !, "Produto "_count_": "
+			Write !, "Produto "_subs_": "
 			Write ?10, nome
 			Write ?26, desc
-			Write ?60, $Justify($Piece(^produto(count), "^", 3), 9)
+			Write ?60, $Justify($Piece(^produto(subs), "^", 3), 9)
 		}
 	  // próxima iteração
-		Set count = $Order(^produto(count), 1)
+		Set subs = $Order(^produto(subs), 1)
 	}
 	
 	Read !, enter // espera interação do usuário para seguir
@@ -189,29 +188,29 @@ porPreco()
 	
 	
  // Print
-	Set count = $Order(^produto(""), 1)
+	Set subs = $Order(^produto(""), 1)
 	Write !!, $Justify("|     Nome     |            Descrição            |  Preço  |", 70)
 	
-	While (count '= "") {
+	While (subs '= "") {
 	  // Define se vai procurar preços abaixo ou acima do selecionado
-		If priceSearch >= 0 { Set bool = $Piece(^produto(count), "^", 3) '< priceSearch }
-		Elseif priceSearch < 0 { Set bool = $Piece(^produto(count), "^", 3) '> -priceSearch }
+		If priceSearch >= 0 { Set bool = $Piece(^produto(subs), "^", 3) '< priceSearch }
+		Elseif priceSearch < 0 { Set bool = $Piece(^produto(subs), "^", 3) '> -priceSearch }
 		
 		If bool {
 		  // arruma tamanhos das strings
-			Set nome = $Piece(^produto(count), "^", 1)
-			Set desc = $Piece(^produto(count), "^", 2)
+			Set nome = $Piece(^produto(subs), "^", 1)
+			Set desc = $Piece(^produto(subs), "^", 2)
 			If $LENGTH(nome) > 15 { Set $Extract(nome,12, *) = "..."}
 			If $LENGTH(desc) > 34 { Set $Extract(desc,31, *) = "..."}
 			
 		  // printa
-			Write !, "Produto "_count_": "
+			Write !, "Produto "_subs_": "
 			Write ?10, nome
 			Write ?26, desc
-			Write ?60, $Justify($Piece(^produto(count), "^", 3), 9)
+			Write ?60, $Justify($Piece(^produto(subs), "^", 3), 9)
 		}
 	  // pxm iteração
-		Set count = $Order(^produto(count), 1)
+		Set subs = $Order(^produto(subs), 1)
 	}
 	
 	Read !, enter // espera interação do usuário para seguir
