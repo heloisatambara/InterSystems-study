@@ -6,7 +6,7 @@ cadastrarProduto
  	
 inicio()
  // Cabeçalho
-	Set tralha = "#######################################################################"
+ //	Set tralha = "#######################################################################"
 	Set hora = $Zdatetime($Horolog, 4, 2) 
 
 	Write !!, tralha
