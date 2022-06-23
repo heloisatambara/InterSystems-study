@@ -3,7 +3,7 @@ exibirPedidos
 
 inicio
  // Cabeçalho
-	Set tralha = "#######################################################################"
+ //	Set tralha = "#######################################################################"
 	Set hora = $Zdatetime($Horolog, 4, 2)
 	
 	Write !!, tralha
@@ -39,40 +39,36 @@ inicio
 	
 todos()
   // itera e printa todos no array
-	Set count = $Order(^pedido(""), 1)
+	Set subs = $Order(^pedido(""), 1)
 	// cabeçalho antes da iteração
 	Write !!, ?9, "|     Cliente     |     Produto     |  Quantidade  |"
 	
-	While (count '= "") { 
+	While (subs '= "") { 
 	  // se nomes forem muito grandes corta o que vai aparecer no print
-		Set cli = $Piece(^pedido(count), "^", 1), cliString = $Piece(^cliente(cli), "^", 1)
-		Set prod = $Piece(^pedido(count), "^", 2), prodString = $Piece(^produto(prod), "^", 1)
-		If $LENGTH(cliString) > 14 { Set $Extract(cliString,11, *) = "..."}
-		If $LENGTH(prodString) > 14 { Set $Extract(prodString,10, *) = "..."}
+		Set cli = $Piece(^pedido(subs), "^", 1)
+		Set prod = $Piece(^pedido(subs), "^", 2)
+		If $LENGTH(cli) > 17 { Set $Extract(cli,15, *) = "..."}
+		If $LENGTH(prod) > 17 { Set $Extract(prod,15, *) = "..."}
 
 	  // printa as informações
-		Write !, "Pedido "_count_": "
-		Write ?10, cliString_" ("_cli_")"
-		Write ?28, prodString_" ("_prod_")"
-		Write ?46, $Justify($Piece(^pedido(count), "^", 3), 14)
+		Write !, "Pedido "_subs_": "
+		Write ?10, cli
+		Write ?28, prod
+		Write ?46, $Justify($Piece(^pedido(subs), "^", 3), 14)
 		
 	  // próxima iteração
-		Set count = $Order(^pedido(count), 1)
+		Set subs = $Order(^pedido(subs), 1)
 	}
 	
    // ler infos completas
 	Read !!, " Expandir informações de algum pedido? ", ans
-	GOTO:('ans) inicio 
+	Quit:('ans)
 	
 	If $Data(^pedido(ans)) {
-		
-		Set cli = $Piece(^pedido(ans), "^", 1), cliString = $Piece(^cliente(cli), "^", 1)
-		Set prod = $Piece(^pedido(ans), "^", 2), prodString = $Piece(^produto(prod), "^", 1)
-		
 		Write !!, tralha
 		Write !,"#", ?70, "#"
-		Write !, "# Cliente......: ", cliString_" ("_cli_")", ?70, "#"
-		Write !, "# Produto......: ", prodString_" ("_prod_")", ?70, "#"
+		Write !, "# Cliente......: ", $Piece(^pedido(ans), "^", 1), ?70, "#"
+		Write !, "# Produto......: ", $Piece(^pedido(ans), "^", 2), ?70, "#"
 		Write !, "# Quantidade...: ", $Piece(^pedido(ans), "^", 3), ?70, "#"
 		Write !,"#", ?70, "#"
 		Write !, tralha
@@ -81,7 +77,6 @@ todos()
 	
 	
 	Read !, enter // espera interação do usuário antes de seguir
-	GOTO inicio
 	Quit
 
 
@@ -110,15 +105,15 @@ porID()
 	If '$Data(^pedido(num)) { GOTO porID+28 }  // se o ID não corresponde a nenhum cliente mostra lista vazia
 
    // arruma tamanhos de strings
-	Set cli = $Piece(^pedido(num), "^", 1), cliString = $Piece(^cliente(cli), "^", 1)
-	Set prod = $Piece(^pedido(num), "^", 2), prodString = $Piece(^produto(prod), "^", 1)
-	If $LENGTH(cliString) > 13 { Set $Extract(cliString,9, *) = "..."}
-	If $LENGTH(prodString) > 14 { Set $Extract(prodString,10, *) = "..."}
+	Set cli = $Piece(^pedido(num), "^", 1)
+	Set prod = $Piece(^pedido(num), "^", 2)
+	If $LENGTH(cli) > 17 { Set $Extract(cli,15, *) = "..."}
+	If $LENGTH(prod) > 17 { Set $Extract(prod,15, *) = "..."}
 
    // mostra informações do cliente selecionado
 	Write !, "Pedido "_num_": "
-	Write ?10, cliString_" ("_cli_")"
-	Write ?28, prodString_" ("_prod_")"
+	Write ?10, cli
+	Write ?28, prod
 	Write ?46, $Justify($Piece(^pedido(num), "^", 3), 14)
  //
 	
@@ -145,25 +140,25 @@ porCliente()
  //
  
  // Print
-	Set count = $Order(^pedido(""), 1)
+	Set subs = $Order(^pedido(""), 1)
 	Write !!, ?9, "|     Cliente     |     Produto     |  Quantidade  |"
 	
-	While (count '= "") {
-		If $Zconvert($Piece(^cliente($Piece(^pedido(count), "^", 1)), "^", 1), "l")[$Zconvert(cliente, "l") { // só entra para o print se tiver o nome ou a parte pesquisada
+	While (subs '= "") {
+		If $Zconvert($Piece(^pedido(subs), "^", 1), "l")[$Zconvert(cliente, "l") { // só entra para o print se tiver o nome ou a parte pesquisada
 		  // arruma tamanhos de strings			
-			Set cli = $Piece(^pedido(count), "^", 1), cliString = $Piece(^cliente(cli), "^", 1)
-			Set prod = $Piece(^pedido(count), "^", 2), prodString = $Piece(^produto(prod), "^", 1)
-			If $LENGTH(cliString) > 13 { Set $Extract(cliString,9, *) = "..."}
-			If $LENGTH(prodString) > 14 { Set $Extract(prodString,10, *) = "..."}
+			Set cli = $Piece(^pedido(subs), "^", 1)
+			Set prod = $Piece(^pedido(subs), "^", 2)
+			If $LENGTH(cli) > 17 { Set $Extract(cli,15, *) = "..."}
+			If $LENGTH(prod) > 17 { Set $Extract(prod,15, *) = "..."}
 
 		  // printa
-			Write !, "Pedido "_count_": "
-			Write ?10, cliString_" ("_cli_")"
-			Write ?28, prodString_" ("_prod_")"
-			Write ?46, $Justify($Piece(^pedido(count), "^", 3), 14)
+			Write !, "Pedido "_subs_": "
+			Write ?10, cli
+			Write ?28, prod
+			Write ?46, $Justify($Piece(^pedido(subs), "^", 3), 14)
 		}
 	  // próxima iteração
-		Set count = $Order(^pedido(count), 1)
+		Set subs = $Order(^pedido(subs), 1)
 	}
 
 
@@ -193,25 +188,25 @@ porProduto()
  
  
  // Print
-	Set count = $Order(^pedido(""), 1)
+	Set subs = $Order(^pedido(""), 1)
 	Write !!, ?9, "|     Cliente     |     Produto     |  Quantidade  |"
 	
-	While (count '= "") {
-		If $Zconvert($Piece(^produto($Piece(^pedido(count), "^", 2)), "^", 1), "l")[$Zconvert(produto, "l") { // só entra para o print se tiver o nome ou a parte pesquisada
+	While (subs '= "") {
+		If $Zconvert($Piece(^pedido(subs), "^", 2), "l")[$Zconvert(produto, "l") { // só entra para o print se tiver o nome ou a parte pesquisada
 		  // arruma tamanhos de strings
-			Set cli = $Piece(^pedido(count), "^", 1), cliString = $Piece(^cliente(cli), "^", 1)
-			Set prod = $Piece(^pedido(count), "^", 2), prodString = $Piece(^produto(prod), "^", 1)
-			If $LENGTH(cliString) > 13 { Set $Extract(cliString,9, *) = "..."}
-			If $LENGTH(prodString) > 14 { Set $Extract(prodString,10, *) = "..."}
+			Set cli = $Piece(^pedido(subs), "^", 1)
+			Set prod = $Piece(^pedido(subs), "^", 2)
+			If $LENGTH(cli) > 17 { Set $Extract(cli,15, *) = "..."}
+			If $LENGTH(prod) > 17 { Set $Extract(prod,15, *) = "..."}
 
 		  // print
-			Write !, "Pedido "_count_": "
-			Write ?10, cliString_" ("_cli_")"
-			Write ?28, prodString_" ("_prod_")"
-			Write ?46, $Justify($Piece(^pedido(count), "^", 3), 14)
+			Write !, "Pedido "_subs_": "
+			Write ?10, cli
+			Write ?28, prod
+			Write ?46, $Justify($Piece(^pedido(subs), "^", 3), 14)
 		}
 	  // pxm iteração
-		Set count = $Order(^pedido(count), 1)	
+		Set subs = $Order(^pedido(subs), 1)	
 	}
 
 
@@ -242,29 +237,29 @@ porQtd()
 	
 
  // Print
-	Set count = $Order(^pedido(""), 1)
+	Set subs = $Order(^pedido(""), 1)
 	Write !!, ?9, "|     Cliente     |     Produto     |  Quantidade  |"
 	
-	While (count '= "") {
+	While (subs '= "") {
 	  // Define se vai procurar quantidades abaixo ou acima do selecionado
-		If qtdSearch >= 0 { Set bool = $Piece(^pedido(count), "^", 3) '< qtdSearch }
-		Elseif qtdSearch < 0 { Set bool = $Piece(^pedido(count), "^", 3) '> -qtdSearch }
+		If qtdSearch >= 0 { Set bool = $Piece(^pedido(subs), "^", 3) '< qtdSearch }
+		Elseif qtdSearch < 0 { Set bool = $Piece(^pedido(subs), "^", 3) '> -qtdSearch }
 		
 		If bool {
 		  // arruma tamanhos das strings
-			Set cli = $Piece(^pedido(count), "^", 1), cliString = $Piece(^cliente(cli), "^", 1)
-			Set prod = $Piece(^pedido(count), "^", 2), prodString = $Piece(^produto(prod), "^", 1)
-			If $LENGTH(cliString) > 13 { Set $Extract(cliString,9, *) = "..."}
-			If $LENGTH(prodString) > 14 { Set $Extract(prodString,10, *) = "..."}
+			Set cli = $Piece(^pedido(subs), "^", 1)
+			Set prod = $Piece(^pedido(subs), "^", 2)
+			If $LENGTH(cli) > 17 { Set $Extract(cli,15, *) = "..."}
+			If $LENGTH(prod) > 17 { Set $Extract(prod,15, *) = "..."}
 
 		  // printa
-			Write !, "Pedido "_count_": "
-			Write ?10, cliString_" ("_cli_")"
-			Write ?28, prodString_" ("_prod_")"
-			Write ?46, $Justify($Piece(^pedido(count), "^", 3), 14)
+			Write !, "Pedido "_subs_": "
+			Write ?10, cli
+			Write ?28, prod
+			Write ?46, $Justify($Piece(^pedido(subs), "^", 3), 14)
 		}
 	  // pxm iteração
-		Set count = $Order(^pedido(count), 1)
+		Set subs = $Order(^pedido(subs), 1)
 	}
 	
 	
