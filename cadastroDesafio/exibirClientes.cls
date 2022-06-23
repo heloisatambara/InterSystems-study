@@ -1,8 +1,10 @@
 exibirClientes
+	Do inicio()
+	Quit
 
-inicio
+inicio()
  // Cabeçalho
-	Set tralha = "#######################################################################"
+  //	Set tralha = "#######################################################################"
 	Set hora = $Zdatetime($Horolog, 4, 2) 
 	
 	Write !!, tralha
@@ -41,32 +43,28 @@ inicio
 
 todos()
  // itera e printa todos no array
-	Set count = $Order(^cliente(""), 1)
+	Set subs = $Order(^cliente(""), 1)
 	// cabeçalho antes da iteração
-	Write !!, "|   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
+	Write !!, " |   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
 	
-	While (count '= "") {
+	While (subs '= "") {
 	  // se nome e endereço forem muito grandes corta o que vai aparecer no print
-		Set nome = $Piece(^cliente(count), "^", 1)
-		Set end = $Piece(^cliente(count), "^", 2)
+		Set nome = $Piece(^cliente(subs), "^", 1)
+		Set end = $Piece(^cliente(subs), "^", 2)
 		If $LENGTH(nome) > 11 { Set $Extract(nome,8, *) = "..."}
 		If $LENGTH(end) > 19 { Set $Extract(end,16, *) = "..."}
 		
 	  // printa as informações
-		Write !, ?1, nome
-		Write ?12, end
-		Write ?32, $Piece(^cliente(count), "^", 3)
-		Write ?49, $Piece(^cliente(count), "^", 4)
-		Write ?65, $Piece(^cliente(count), "^", 5)
+		Write !, subs, ?2, nome, ?13, end, ?33, $Piece(^cliente(subs), "^", 3), ?50, $Piece(^cliente(subs), "^", 4), ?66, $Piece(^cliente(subs), "^", 5)
 	  
 	  // próxima iteração
-		Set count = $Order(^cliente(count), 1)
+		Set subs = $Order(^cliente(subs), 1)
 	}
 	
 	
    // ler infos completas
 	Read !!, " Expandir informações de algum cliente? ", ans
-	GOTO:('ans) inicio 
+	Quit:('ans) 
 	
 	If $Data(^cliente(ans)) {
 		Write !!, tralha
@@ -82,7 +80,6 @@ todos()
 	 
 	
 	Read !, enter // espera interação do usuário antes de seguir 
-	GOTO inicio
 	Quit
 	
 	
@@ -106,10 +103,10 @@ porID()
  
  
  // Print
-	Write !!, "|   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
+	Write !!, " |   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
 	
-	GOTO:(num="") inicio // volta se o ID for nulo 
-	If '$Data(^cliente(num)) { GOTO porID+30 } // se o ID não corresponde a nenhum cliente mostra lista vazia
+	GOTO:(num="") inicio+1 // volta se o ID for nulo 
+	If '$Data(^cliente(num)) { GOTO porID+25 } // se o ID não corresponde a nenhum cliente mostra lista vazia
 	
    // arruma tamanhos de strings
 	Set nome = $Piece(^cliente(num), "^", 1)
@@ -118,15 +115,11 @@ porID()
 	If $LENGTH(end) > 19 { Set $Extract(end,16, *) = "..."}
 
    // mostra informações do cliente selecionado
-	Write !, ?1, nome
-	Write ?12, end
-	Write ?32, $Piece(^cliente(num), "^", 3)
-	Write ?49, $Piece(^cliente(num), "^", 4)
-	Write ?65, $Piece(^cliente(num), "^", 5)
+	Write !, subs, ?2, nome, ?13, end, ?33, $Piece(^cliente(num), "^", 3), ?50, $Piece(^cliente(num), "^", 4), ?66, $Piece(^cliente(num), "^", 5)
  //
 	
 	Read !, enter // espera interação do usuário para seguir
-	GOTO inicio	
+	GOTO inicio+1
 	
 	Quit
 
@@ -154,32 +147,28 @@ porNome()
 	
 	
  // Print
-	Set count = $Order(^cliente(""), 1)
-	Write !!, "|   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
-	While (count '= "") {
+	Set subs = $Order(^cliente(""), 1)
+	Write !!, " |   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
+	While (subs '= "") {
 		
-		If $Piece(^cliente(count), "^", 1)[nameSearch { // só entra para o print se tiver o nome ou a parte pesquisada
+		If $Piece(^cliente(subs), "^", 1)[nameSearch { // só entra para o print se tiver o nome ou a parte pesquisada
 		  // arruma tamanhos de strings
-			Set nome = $Piece(^cliente(count), "^", 1)
-			Set end = $Piece(^cliente(count), "^", 2)
+			Set nome = $Piece(^cliente(subs), "^", 1)
+			Set end = $Piece(^cliente(subs), "^", 2)
 			If $LENGTH(nome) > 11 { Set $Extract(nome,8, *) = "..."}
 			If $LENGTH(end) > 19 { Set $Extract(end,16, *) = "..."}
 		  
 		  // printa
-			Write !, ?1, nome
-			Write ?12, end
-			Write ?32, $Piece(^cliente(count), "^", 3)
-			Write ?49, $Piece(^cliente(count), "^", 4)
-			Write ?65, $Piece(^cliente(count), "^", 5)
+			Write !, subs, ?2, nome, ?13, end, ?33, $Piece(^cliente(subs), "^", 3), ?50, $Piece(^cliente(subs), "^", 4), ?66, $Piece(^cliente(subs), "^", 5)
 		}
 	  // próxima iteração
-		Set count = $Order(^cliente(count), 1)
+		Set subs = $Order(^cliente(subs), 1)
 		
 	}
 	
 	
 	Read !, enter // espera interação do usuário para seguir
-	GOTO inicio
+ 	GOTO inicio+1
 	Quit
 	
 
@@ -208,31 +197,27 @@ porCPF()
  
  
  // Print 	
-	Set count = $Order(^cliente(""), 1)
-	Write !!, "|   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
-	While (count '= "") {
+	Set subs = $Order(^cliente(""), 1)
+	Write !!, " |   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
+	While (subs '= "") {
 		
-		If $Piece(^cliente(count), "^", 4)[cpfSearch { // só entra para o print se tiver o CPF ou a parte pesquisada
+		If $Piece(^cliente(subs), "^", 4)[cpfSearch { // só entra para o print se tiver o CPF ou a parte pesquisada
 		  // arruma tamanhos
-			Set nome = $Piece(^cliente(count), "^", 1)
-			Set end = $Piece(^cliente(count), "^", 2)
+			Set nome = $Piece(^cliente(subs), "^", 1)
+			Set end = $Piece(^cliente(subs), "^", 2)
 			If $LENGTH(nome) > 11 { Set $Extract(nome,8, *) = "..."}
 			If $LENGTH(end) > 19 { Set $Extract(end,16, *) = "..."}
 			
 		  // printa	
-			Write !, ?1, nome
-			Write ?12, end
-			Write ?32, $Piece(^cliente(count), "^", 3)
-			Write ?49, $Piece(^cliente(count), "^", 4)
-			Write ?65, $Piece(^cliente(count), "^", 5)
+			Write !, subs, ?2, nome, ?13, end, ?33, $Piece(^cliente(subs), "^", 3), ?50, $Piece(^cliente(subs), "^", 4), ?66, $Piece(^cliente(subs), "^", 5)
 		}
 	  // pxm iteração
-		Set count = $Order(^cliente(count), 1)
+		Set subs = $Order(^cliente(subs), 1)
 		
 	}
 	
 	Read !, enter // espera interação do usuário para seguir
-	GOTO inicio
+	GOTO inicio+1
 	Quit
 
 
@@ -259,33 +244,29 @@ porIdade()
  
 	
  // Print	
-	Set count = $Order(^cliente(""), 1)
-	Write !!, "|   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
-	While (count '= "") {
+	Set subs = $Order(^cliente(""), 1)
+	Write !!, " |   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
+	While (subs '= "") {
 		
-		Set idade = (+$Horolog - $Zdateh($Piece(^cliente(count), "^", 5),4)) / 365 // calcula a idade
+		Set idade = (+$Horolog - $Zdateh($Piece(^cliente(subs), "^", 5),4)) / 365 // calcula a idade
 		If ageSearch >= 0 { Set bool = idade '< ageSearch } // se a entrada for positiva, aceita todas as idades acima da escolhida
 		Elseif ageSearch < 0 { Set bool = idade '> -ageSearch } // se a entrada for negativa, aceita todas as idades abaixo da escolhida
 		
 		If bool { // só entra no print idades escolhidas
 		  // arruma tamanhos de strings
-			Set nome = $Piece(^cliente(count), "^", 1)
-			Set end = $Piece(^cliente(count), "^", 2)
+			Set nome = $Piece(^cliente(subs), "^", 1)
+			Set end = $Piece(^cliente(subs), "^", 2)
 			If $LENGTH(nome) > 11 { Set $Extract(nome,8, *) = "..."}
 			If $LENGTH(end) > 19 { Set $Extract(end,16, *) = "..."}
 			
 		  // printa
-			Write !, ?1, nome
-			Write ?12, end
-			Write ?32, $Piece(^cliente(count), "^", 3)
-			Write ?49, $Piece(^cliente(count), "^", 4)
-			Write ?65, $Piece(^cliente(count), "^", 5)
+			Write !, subs, ?2, nome, ?13, end, ?33, $Piece(^cliente(subs), "^", 3), ?50, $Piece(^cliente(subs), "^", 4), ?66, $Piece(^cliente(subs), "^", 5)
 		}
 	  // pxm iteração
-		Set count = $Order(^cliente(count), 1)
+		Set subs = $Order(^cliente(subs), 1)
 		
 	}
 	
 	Read !, enter // espera interação do usuário para seguir
-	GOTO inicio
+	GOTO inicio+1
 	Quit
