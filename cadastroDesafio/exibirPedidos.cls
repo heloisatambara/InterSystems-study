@@ -1,9 +1,8 @@
 exibirPedidos
 
-
 inicio
+	NEW hora, num
  // Cabeçalho
- //	Set tralha = "#######################################################################"
 	Set hora = $Zdatetime($Horolog, 4, 2)
 	
 	Write !!, tralha
@@ -12,7 +11,6 @@ inicio
 	Write !, "#", $Justify(hora_" #", 70)
 	Write !, tralha
 	Write !, "#", ?70, "#"
-	
 
 	Write !, "#", " 1- Exibir todos", ?70, "#"
 	Write !, "#", " 2- Pesquisar por ID", ?70, "#"
@@ -22,22 +20,36 @@ inicio
 	Write !, "#", " 0- Sair", ?70, "#"
 	Write !, "#", ?70, "#"
 	
-	Read !, "# Entre com a opção desejada: ", num
-	Write ?70, "#"
+	Read !, "# Entre com a opção desejada: ", num, ?70, "#"
 	Write !, "#", ?70, "#"
 	Write !, tralha
 	
 	Hang .25
  //
- 
 	
 	Quit:'num
 	Do $Case(num, 1:todos, 2:porID, 3:porCliente, 4:porProduto, 5:porQtd, :inicio)
-	
 	Quit
 	
 	
-todos()
+todos
+	NEW ans, enter
+	Do exibirTudo()
+   // ler infos completas
+	Read !!, " Expandir informações de algum pedido? ", ans
+	GOTO:('ans) inicio
+	
+	If $Data(^pedido(ans)) {
+		Write !!, tralha
+		Do exibirPorID(ans)
+		Write !, tralha
+	}	
+	Read !, enter // espera interação do usuário antes de seguir
+	GOTO inicio
+	Quit
+
+exibirTudo()
+	NEW subs, cli, prod
   // itera e printa todos no array
 	Set subs = $Order(^pedido(""), 1)
 	// cabeçalho antes da iteração
@@ -59,28 +71,11 @@ todos()
 	  // próxima iteração
 		Set subs = $Order(^pedido(subs), 1)
 	}
-	
-   // ler infos completas
-	Read !!, " Expandir informações de algum pedido? ", ans
-	Quit:('ans)
-	
-	If $Data(^pedido(ans)) {
-		Write !!, tralha
-		Write !,"#", ?70, "#"
-		Write !, "# Cliente......: ", $Piece(^pedido(ans), "^", 1), ?70, "#"
-		Write !, "# Produto......: ", $Piece(^pedido(ans), "^", 2), ?70, "#"
-		Write !, "# Quantidade...: ", $Piece(^pedido(ans), "^", 3), ?70, "#"
-		Write !,"#", ?70, "#"
-		Write !, tralha
-	}
-	 
-	
-	
-	Read !, enter // espera interação do usuário antes de seguir
 	Quit
 
 
-porID()
+porID
+	NEW hora, ID, enter
  // Cabeçalho
 	Set hora = $Zdatetime($Horolog, 4, 2)
 	
@@ -91,38 +86,32 @@ porID()
 	Write !, tralha
 	Write !, "#", ?70, "#"
 	
-	Read !, "# Digite o ID: ", num
-	Write ?70, "#"
+	Read !, "# Digite o ID: ", ID, ?70, "#"
 	Write !, "#", ?70, "#"
-	Write !, tralha
  //
- 
  
  // Print
-	Write !!, ?9, "|     Cliente     |     Produto     |  Quantidade  |"
-	
-	GOTO:(num="") inicio // volta se o ID for nulo 
-	If '$Data(^pedido(num)) { GOTO porID+28 }  // se o ID não corresponde a nenhum cliente mostra lista vazia
-
-   // arruma tamanhos de strings
-	Set cli = $Piece(^pedido(num), "^", 1)
-	Set prod = $Piece(^pedido(num), "^", 2)
-	If $LENGTH(cli) > 17 { Set $Extract(cli,15, *) = "..."}
-	If $LENGTH(prod) > 17 { Set $Extract(prod,15, *) = "..."}
-
-   // mostra informações do cliente selecionado
-	Write !, "Pedido "_num_": "
-	Write ?10, cli
-	Write ?28, prod
-	Write ?46, $Justify($Piece(^pedido(num), "^", 3), 14)
- //
-	
+	IF (ID="") { Write !, tralha Hang .25 GOTO inicio } // volta se o ID for nulo 
+	If '$Data(^pedido(ID)) { Write !, tralha, !, "ID não cadastrado" }
+	Else { Do exibirPorID(ID) Write !, tralha}	
 	Read !, enter // espera interação do usuário para seguir
-	GOTO inicio
-	
+	GOTO inicio	
 	Quit
 
-porCliente()
+	
+exibirPorID(ID) public
+	Write !,"#", ?70, "#"
+	Write !, "# Cliente......: ", $Piece(^pedido(ID), "^", 1), ?70, "#"
+	Write !, "# Produto......: ", $Piece(^pedido(ID), "^", 2), ?70, "#"
+	Write !, "# Quantidade...: ", $Piece(^pedido(ID), "^", 3), ?70, "#"
+	Write !,"#", ?70, "#"
+	Quit
+	
+	
+	
+
+porCliente
+	NEW hora, cliente, subs, cli, prod, enter
  // Cabeçalho
 	Set hora = $Zdatetime($Horolog, 4, 2)
 	
@@ -169,7 +158,8 @@ porCliente()
 
 
 
-porProduto()
+porProduto
+	NEW hora, produto, subs, cli, prod, enter
  // Cabeçalho
 	Set hora = $Zdatetime($Horolog, 4, 2)
 	
@@ -208,8 +198,6 @@ porProduto()
 	  // pxm iteração
 		Set subs = $Order(^pedido(subs), 1)	
 	}
-
-
 	Read !, enter // espera interação do usuário para seguir
 	GOTO inicio
 	
@@ -218,7 +206,8 @@ porProduto()
 
 
 
-porQtd()
+porQtd
+	NEW hora, qtdSearch, subs, bool, cli, prod, enter
  // Cabeçalho
 	Set hora = $Zdatetime($Horolog, 4, 2)
 	
