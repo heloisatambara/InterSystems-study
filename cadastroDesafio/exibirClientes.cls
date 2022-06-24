@@ -1,10 +1,8 @@
 exibirClientes
-	Do inicio()
-	Quit
 
-inicio()
+inicio
+	NEW hora, num
  // Cabeçalho
-  //	Set tralha = "#######################################################################"
 	Set hora = $Zdatetime($Horolog, 4, 2) 
 	
 	Write !!, tralha
@@ -41,7 +39,25 @@ inicio()
 
 
 
-todos()
+todos
+	NEW ans, enter
+	Do exibirTudo()
+	
+   // ler infos completas
+	Read !!, " Expandir informações de algum cliente? ", ans
+	GOTO:('ans) inicio+1
+	
+	If $Data(^cliente(ans)) {
+		Write !!, tralha
+		Do exibirPorID(ans)
+		Write !, tralha
+	}
+	Read !, enter // espera interação do usuário antes de seguir 
+	GOTO inicio
+	Quit
+	
+exibirTudo() public
+	NEW subs, nome, end
  // itera e printa todos no array
 	Set subs = $Order(^cliente(""), 1)
 	// cabeçalho antes da iteração
@@ -60,31 +76,11 @@ todos()
 	  // próxima iteração
 		Set subs = $Order(^cliente(subs), 1)
 	}
-	
-	
-   // ler infos completas
-	Read !!, " Expandir informações de algum cliente? ", ans
-	Quit:('ans) 
-	
-	If $Data(^cliente(ans)) {
-		Write !!, tralha
-		Write !,"#", ?70, "#"
-		Write !, "# Nome.............: ", $Piece(^cliente(ans), "^", 1), ?70, "#"
-		Write !, "# Endereço.........: ", $Piece(^cliente(ans), "^", 2), ?70, "#"
-		Write !, "# Telefone.........: ", $Piece(^cliente(ans), "^", 3), ?70, "#"
-		Write !, "# CPF..............: ", $Piece(^cliente(ans), "^", 4), ?70, "#" 
-		Write !, "# Data Nascimento..: ", $Piece(^cliente(ans), "^", 5), ?70, "#"
-		Write !,"#", ?70, "#"
-		Write !, tralha
-	}
-	 
-	
-	Read !, enter // espera interação do usuário antes de seguir 
 	Quit
 	
 	
-	
-porID()
+porID
+	NEW hora, ID, enter
  // Cabeçalho
 	Set hora = $Zdatetime($Horolog, 4, 2)
 	
@@ -95,39 +91,35 @@ porID()
 	Write !, tralha
 	Write !, "#", ?70, "#"
 	
-	Read !, "# Digite o ID: ", num
+	Read !, "# Digite o ID: ", ID
 	Write ?70, "#"
 	Write !, "#", ?70, "#"
-	Write !, tralha
  //
- 
- 
- // Print
-	Write !!, " |   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
 	
-	GOTO:(num="") inicio+1 // volta se o ID for nulo 
-	If '$Data(^cliente(num)) { GOTO porID+25 } // se o ID não corresponde a nenhum cliente mostra lista vazia
-	
-   // arruma tamanhos de strings
-	Set nome = $Piece(^cliente(num), "^", 1)
-	Set end = $Piece(^cliente(num), "^", 2)
-	If $LENGTH(nome) > 11 { Set $Extract(nome,8, *) = "..."}
-	If $LENGTH(end) > 19 { Set $Extract(end,16, *) = "..."}
-
-   // mostra informações do cliente selecionado
-	Write !, subs, ?2, nome, ?13, end, ?33, $Piece(^cliente(num), "^", 3), ?50, $Piece(^cliente(num), "^", 4), ?66, $Piece(^cliente(num), "^", 5)
- //
+	If (ID="") { Write !, tralha Hang .25 GOTO inicio } // volta se o ID for nulo 
+	If '$Data(^cliente(ID)) { Write !, tralha, !, "ID não cadastrado" }
+ 	Else { Do exibirPorID(ID) Write !, tralha }
 	
 	Read !, enter // espera interação do usuário para seguir
-	GOTO inicio+1
+	GOTO inicio
 	
+	Quit
+
+exibirPorID(ID) public	   	
+	Write !,"#", ?70, "#"
+	Write !, "# Nome.............: ", $Piece(^cliente(ID), "^", 1), ?70, "#"
+	Write !, "# Endereço.........: ", $Piece(^cliente(ID), "^", 2), ?70, "#"
+	Write !, "# Telefone.........: ", $Piece(^cliente(ID), "^", 3), ?70, "#"
+	Write !, "# CPF..............: ", $Piece(^cliente(ID), "^", 4), ?70, "#" 
+	Write !, "# Data Nascimento..: ", $Piece(^cliente(ID), "^", 5), ?70, "#"
+	Write !,"#", ?70, "#"
 	Quit
 
 
 
 
-
-porNome()
+porNome
+	NEW hora, nameSearch, subs, nome, end, enter
  // Cabeçalho
 	Set hora = $Zdatetime($Horolog, 4, 2)
 	
@@ -143,9 +135,7 @@ porNome()
 	Write !, "#", ?70, "#"
 	Write !, tralha
  //
-	
-	
-	
+
  // Print
 	Set subs = $Order(^cliente(""), 1)
 	Write !!, " |   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
@@ -165,20 +155,14 @@ porNome()
 		Set subs = $Order(^cliente(subs), 1)
 		
 	}
-	
-	
 	Read !, enter // espera interação do usuário para seguir
  	GOTO inicio+1
 	Quit
 	
 
 
-
-
-
-
-
-porCPF()
+porCPF
+	NEW hora, cpfSearch, subs, nome, end, enter
  // Cabeçalho
 	Set hora = $Zdatetime($Horolog, 4, 2) 
 	
@@ -194,7 +178,6 @@ porCPF()
 	Write !, "#", ?70, "#"
 	Write !, tralha
  //
- 
  
  // Print 	
 	Set subs = $Order(^cliente(""), 1)
@@ -215,9 +198,8 @@ porCPF()
 		Set subs = $Order(^cliente(subs), 1)
 		
 	}
-	
 	Read !, enter // espera interação do usuário para seguir
-	GOTO inicio+1
+	GOTO inicio
 	Quit
 
 
@@ -225,7 +207,8 @@ porCPF()
 
 
 
-porIdade()
+porIdade
+	NEW hora, ageSearch, subs, idade, bool, nome, end, enter
  // Cabeçalho
 	Set hora = $Zdatetime($Horolog, 4, 2) 
 	
@@ -242,7 +225,6 @@ porIdade()
 	Write !, tralha
  //
  
-	
  // Print	
 	Set subs = $Order(^cliente(""), 1)
 	Write !!, " |   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
@@ -266,7 +248,6 @@ porIdade()
 		Set subs = $Order(^cliente(subs), 1)
 		
 	}
-	
 	Read !, enter // espera interação do usuário para seguir
-	GOTO inicio+1
+	GOTO inicio
 	Quit
