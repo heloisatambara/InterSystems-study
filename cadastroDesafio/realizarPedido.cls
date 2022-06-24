@@ -1,13 +1,8 @@
 realizarPedido
 
- // formatos:
- // ^pedido(1)=cliente^produto^quantidade
- 
-	Do inicio()
-
-inicio()
+inicio
  // Cabeçalho
- //	Set tralha = "#######################################################################"
+	NEW hora, ID, ans, cli, prod, qtd
 	Set hora = $Zdatetime($Horolog, 4, 2) 
 	
 	Write !!, tralha
@@ -18,8 +13,17 @@ inicio()
 	Write !, "#", ?70, "#"
    //
  
- 
-   // pede informações para cadastro	
+   // pede informações para cadastro
+    Read !, "# ID ..............: ", ID
+    If (ID'="")&&($DATA(^pedido(ID))) { // mostra o cliente cadastrado sobre o ID
+	    Write " - ID já cadastrado", ?70, "#" Hang .25
+		Do exibirPorID^exibirPedidos(ID) Hang 1
+		Read !, "# Deseja sobrescrever os dados? ", ans, ?70, "#"
+		If '("SIMsimSim"[ans) { GOTO inicio }
+		Else { Write !, "#", ?70, "#" }
+	    }
+	Else {Write ?70,"#" Hang .25}
+	
 	Read !, "# Cliente..........: ", cli
 	If ((cli '= "")&&$DATA(^cliente(cli))) { Write " - ", $Piece(^cliente(cli), "^", 1)}
 	Write ?70, "#"
@@ -42,28 +46,30 @@ inicio()
 	Do consistencia()
 	If ($DATA(cli) && $DATA(prod) && $DATA(qtd)) {
 		Do cadastra()
+		Write !, " Dados cadastrados." Hang .5
 		}
 	Else { // recomeça o cadastro se algum campo não for preenchido ou se for inválido
-		Write !, $Select('$Data(cli):"Cliente inválido", '$Data(prod):"Produto inválido", '$Data(qtd):"Quantidade inválida")
-		GOTO inicio+1
-	}
-	
+		Write !, $Select('$Data(cli):" Cliente inválido", '$Data(prod):" Produto inválido", '$Data(qtd):" Quantidade inválida")
+		GOTO inicio
+		}
 	Quit
 	
 	
 cadastra() public
+	NEW cliString, prodString
 	Set cliString = $Piece(^cliente(cli), "^", 1)
 	Set prodString = $Piece(^produto(prod), "^", 1)
-	Set ID = $Order(^pedido(""), -1)
-	Do $Increment(ID)
+	If (ID = "") {
+		Set ID = $Order(^pedido(""), -1)
+		Do $Increment(ID)
+	}
 	Set ^pedido(ID) = "("_cli_") "_cliString_"^"_"("_prod_") "_prodString_"^"_qtd
-	
 	Quit
+	
 	
 	
 consistencia() public
 	Kill:((cli="")||'$DATA(^cliente(cli))) cli
 	Kill:((prod="")||'$DATA(^produto(prod))) prod
 	Kill:('(qtd?.N)||(qtd < 0)||(qtd="")) qtd
-	
 	Quit
