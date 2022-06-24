@@ -2,8 +2,8 @@ exibirProdutos
 
 
 inicio
+	NEW hora, num
  // Cabeçalho
-	//Set tralha = "#######################################################################"
 	Set hora = $Zdatetime($Horolog, 4, 2) 
 	
 	Write !!, tralha
@@ -30,13 +30,29 @@ inicio
 	
 	Quit:'num
 	Do $Case(num, 1:todos, 2:porID, 3:porNome, 4:porPreco, :inicio)
-	
 	Quit
 
 
+todos
+	NEW ans, enter
+ 	Do exibirTudo()
+   // ler infos completas
+	Read !!, " Expandir informações de algum produto? ", ans
+	GOTO:('ans) inicio
+	
+	If $Data(^produto(ans)) {
+		Write !!, tralha
+		Do exibirPorID(ans)
+		Write !, tralha
+	}
+	 
+	Read !, enter // espera interação do usuário antes de seguir
+	GOTO inicio 
+	Quit
 
-todos()
-  // itera e printa todos no array
+exibirTudo() public
+	NEW subs, nome, desc
+ // itera e printa todos no array
 	Set subs = $Order(^produto(""), 1)
 	// cabeçalho antes da iteração
 	Write !!, $Justify("|     Nome     |            Descrição            |  Preço  |", 70)
@@ -58,27 +74,11 @@ todos()
 	  // próxima iteração
 		Set subs = $Order(^produto(subs), 1)
 	}
-	
-   // ler infos completas
-	Read !!, " Expandir informações de algum produto? ", ans
-	Quit:('ans) 
-	
-	If $Data(^produto(ans)) {
-		Write !!, tralha
-		Write !,"#", ?70, "#"
-		Write !, "# Nome........: ", $Piece(^produto(ans), "^", 1), ?70, "#"
-		Write !, "# Descrição...: ", $Piece(^produto(ans), "^", 2), ?70, "#"
-		Write !, "# Preço.......: ", $Piece(^produto(ans), "^", 3), ?70, "#"
-		Write !,"#", ?70, "#"
-		Write !, tralha
-	}
-	 
-	
-	Read !, enter // espera interação do usuário antes de seguir
 	Quit
 
 
-porID()
+porID
+	NEW hora, ID, enter
  // Cabeçalho
 	Set hora = $Zdatetime($Horolog, 4, 2) 
 	
@@ -89,39 +89,31 @@ porID()
 	Write !, tralha
 	Write !, "#", ?70, "#"
 	
-	Read !, "# Digite o ID: ", num
+	Read !, "# Digite o ID: ", ID
 	Write ?70, "#"
 	Write !, "#", ?70, "#"
-	Write !, tralha
  //
- 
  
  // Print
-	Write !!, $Justify("|     Nome     |            Descrição            |  Preço  |", 70)
-	
-	GOTO:(num="") inicio // volta se o ID for nulo 
-	If '$Data(^produto(num)) { GOTO porID+28 }  // se o ID não corresponde a nenhum cliente mostra lista vazia
-
-   // arruma tamanhos de strings
-	Set nome = $Piece(^produto(num), "^", 1)
-	Set desc = $Piece(^produto(num), "^", 2)
-	If $LENGTH(nome) > 15 { Set $Extract(nome,12, *) = "..."}
-	If $LENGTH(desc) > 34 { Set $Extract(desc,31, *) = "..."}
-
-   // mostra informações do cliente selecionado
-	Write !, "Produto "_num_": "
-		Write ?10, nome
-		Write ?26, desc
-		Write ?60, $Justify($Piece(^produto(num), "^", 3), 9)
- //
- 
-	
+	IF (ID="") { Write !, tralha Hang .25 GOTO inicio } // volta se o ID for nulo 
+	If '$Data(^produto(ID)) { Write !, tralha, !, "ID não cadastrado" }
+	Else { Do exibirPorID(ID) Write !, tralha}	
 	Read !, enter // espera interação do usuário para seguir
 	GOTO inicio	
-	
 	Quit
+	
+exibirPorID(ID) public
+		Write !,"#", ?70, "#"
+		Write !, "# Nome........: ", $Piece(^produto(ID), "^", 1), ?70, "#"
+		Write !, "# Descrição...: ", $Piece(^produto(ID), "^", 2), ?70, "#"
+		Write !, "# Preço.......: ", $Piece(^produto(ID), "^", 3), ?70, "#"
+		Write !,"#", ?70, "#"
+		Quit
+	
+	
 
 porNome()
+	NEW hora, nameSearcj, subs, nome, desc, enter
  // Cabeçalho
 	Set hora = $Zdatetime($Horolog, 4, 2)
 	
@@ -162,7 +154,6 @@ porNome()
 	  // próxima iteração
 		Set subs = $Order(^produto(subs), 1)
 	}
-	
 	Read !, enter // espera interação do usuário para seguir
 	GOTO inicio
 	Quit
@@ -170,6 +161,7 @@ porNome()
 
 
 porPreco()
+	NEW hora, priceSearch, subs, bool, nome, desc, enter
  // Cabeçalho
 	Set hora = $Zdatetime($Horolog, 4, 2)
 	
@@ -216,3 +208,4 @@ porPreco()
 	Read !, enter // espera interação do usuário para seguir
 	GOTO inicio
 	Quit
+
