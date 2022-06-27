@@ -39,18 +39,23 @@ todos
 	Quit
 
 exibirTudo()
-	NEW subs, cli, prod
+	NEW subs, cli, prod, pedido
     // itera e printa todos no array
 	Set subs = $Order(^pedido(""), 1)
 	// cabeçalho antes da iteração
 	Write !!, ?9, "|     Cliente     |     Produto     |  Quantidade  |"
 	While (subs '= "") { 
+		Set pedido = ^pedido(subs)
 	  // se nomes forem muito grandes corta o que vai aparecer no print
-		Set cli = $Piece(^pedido(subs), "^", 1) If $LENGTH(cli) > 17 { Set $Extract(cli,15, *) = "..."}
-		Set prod = $Piece(^pedido(subs), "^", 2) If $LENGTH(prod) > 17 { Set $Extract(prod,15, *) = "..."}
+		Set cli = $Piece(pedido, "^", 1)
+		If $LENGTH(cli) > 17 {
+			Set $Extract(cli,15, *) = "..."}
+		Set prod = $Piece(pedido, "^", 2)
+		If $LENGTH(prod) > 17 {
+			Set $Extract(prod,15, *) = "..."}
 			
 	    // printa
-		Write !, "Pedido "_subs_": ", ?10, cli, ?28, prod, ?46, $Justify($Piece(^pedido(subs), "^", 3), 14)
+		Write !, "Pedido "_subs_": ", ?10, cli, ?28, prod, ?46, $Justify($Piece(pedido, "^", 3), 14)
 	    // próxima iteração
 		Set subs = $Order(^pedido(subs), 1) }
 	Quit
@@ -65,20 +70,30 @@ porID
 	Write !, "#", ?70, "#"
 
  // Print
-	IF (ID="") { Write !, tralha Hang .25 GOTO inicio } // volta se o ID for nulo 
-	If '$Data(^pedido(ID)) { Write !, tralha, !, "ID não cadastrado" }
-	Else { Do exibirPorID(ID) Write !, tralha}	
+	IF (ID="") {
+		Write !, tralha
+		Hang .25
+		GOTO inicio } // volta se o ID for nulo 
+	If '$Data(^pedido(ID)) {
+		Write !, tralha, !, "ID não cadastrado" }
+	Else {
+		Do exibirPorID(ID)
+		Write !, tralha}	
 	
 	Read !, enter // espera interação do usuário para seguir
 	GOTO inicio	
 	Quit
 
 exibirPorID(ID) public
-	Write !, "#", ?70,                                              "#"
-	Write !, "# Cliente......: ", $Piece(^pedido(ID), "^", 1), ?70, "#"
-	Write !, "# Produto......: ", $Piece(^pedido(ID), "^", 2), ?70, "#"
-	Write !, "# Quantidade...: ", $Piece(^pedido(ID), "^", 3), ?70, "#"
-	Write !, "#", ?70,                                              "#"
+	If (ID?.N) {
+		Set pedido = ^pedido(ID) }
+	Else { // passar valor direto da var, ou id
+		Set pedido = ID }
+	Write !, "#", ?70,                                         "#"
+	Write !, "# Cliente......: ", $Piece(pedido, "^", 1), ?70, "#"
+	Write !, "# Produto......: ", $Piece(pedido, "^", 2), ?70, "#"
+	Write !, "# Quantidade...: ", $Piece(pedido, "^", 3), ?70, "#"
+	Write !, "#", ?70,                                         "#"
 	Quit
 	
 	
@@ -130,22 +145,30 @@ porQtd
 	Quit
 
 printPedidos(search, type) // type é o tipo de comparação que será feita 
-	NEW subs, bool, cli, prod
+	NEW subs, bool, cli, prod, pedido 
 	Set subs = $Order(^pedido(""), 1)
 	Write !!, ?9, "|     Cliente     |     Produto     |  Quantidade  |"
 	While (subs '= "") {
+		Set pedido = ^pedido(subs)
 		// seleciona a comparacao
 		If type=3 {
-			If qtdSearch >= 0 { Set bool = $Piece(^pedido(subs), "^", 3) '< search }
-			Elseif qtdSearch < 0 { Set bool = $Piece(^pedido(subs), "^", 3) '> -search }}
-		Else { Set bool = $Zconvert($Piece(^pedido(subs), "^", type), "l")[$Zconvert(search, "l") }
+			If qtdSearch >= 0 {
+				Set bool = $Piece(pedido, "^", 3) '< search }
+			Elseif qtdSearch < 0 {
+				Set bool = $Piece(pedido, "^", 3) '> -search }}
+		Else {
+			Set bool = $Zconvert($Piece(pedido, "^", type), "l")[$Zconvert(search, "l") }
 		// print dos selecionados
 		If bool {
 		    // arruma tamanhos das strings
-			Set cli = $Piece(^pedido(subs), "^", 1) If $LENGTH(cli) > 17 { Set $Extract(cli,15, *) = "..."}
-			Set prod = $Piece(^pedido(subs), "^", 2) If $LENGTH(prod) > 17 { Set $Extract(prod,15, *) = "..."}
+			Set cli = $Piece(pedido, "^", 1)
+			If $LENGTH(cli) > 17 {
+				Set $Extract(cli,15, *) = "..."}
+			Set prod = $Piece(pedido, "^", 2) 
+			If $LENGTH(prod) > 17 {
+				Set $Extract(prod,15, *) = "..."}
 		    // print
-			Write !, "Pedido "_subs_": ", ?10, cli, ?28, prod, ?46, $Justify($Piece(^pedido(subs), "^", 3), 14) }
+			Write !, "Pedido "_subs_": ", ?10, cli, ?28, prod, ?46, $Justify($Piece(pedido, "^", 3), 14) }
 	    // pxm iteração
 		Set subs = $Order(^pedido(subs), 1) }
 	Quit
