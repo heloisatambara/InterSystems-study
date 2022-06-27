@@ -2,7 +2,8 @@ cadastroOFC
  // quando tiver o ID, trazer a global para memória para acessar o banco uma vez só
  // verificação de relacionamento de global (guardar só código)
  // um comando por linha
- // melhorar alteração de dados 
+ // melhorar essa pouca vergonha de alteração de dados qeu vc fez - o do gilleady ficou demais, se inspire!
+ // salvar datas em horolog
 Inicio
 	NEW num
 	Do cabecalho("Solicitação de Pedido")
