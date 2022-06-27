@@ -1,39 +1,42 @@
 cadastroOFC
-
+ // quando tiver o ID, trazer a global para memória para acessar o banco uma vez só
+ // verificação de relacionamento de global (guardar só código)
+ // um comando por linha
+ // melhorar alteração de dados 
 Inicio
-	NEW hora, num
- // cabeçalho
-	Set tralha = "#######################################################################"
-	Set hora = $Zdatetime($Horolog, 4, 2)
-	
-	Write !!!, tralha
-	Write !, "#", ?70,                                       "#"
-	Write !, "#", ?25 ,"Solicitação de Pedido", ?70,         "#"
-	Write !, "#", $Justify(hora_" #", 70)
-	Write !, tralha
-	Write !, "#", " Menu", ?70,                              "#"
-	Write !, "#", " 1- Cadastrar Cliente", ?70,              "#"
-	Write !, "#", " 2- Cadastrar Produto",?70,               "#"
-	Write !, "#", " 3- Realizar Pedido", ?70,                "#"
-	Write !, "#", " 4- Exibir dados", ?70,                   "#"
-	Write !, "#", " 5- Atualizar dados", ?70,                "#"
-	Write !, "#", " 6- Apagar dados", ?70,                   "#"
-	Write !, "#", " 0- Sair", ?70,                           "#"
-	Write !, "#", ?70,                                       "#"
-	
-	Read !, "# Entre com a opção desejada: ", num Write ?70, "#"
-	
-	Write !, "#", ?70,                                       "#"
+	NEW num
+	Do cabecalho("Solicitação de Pedido")
+	Write !, "#", " Menu", ?70,                               "#"
+	Write !, "#", " 1- Cadastrar Cliente", ?70,               "#"
+	Write !, "#", " 2- Cadastrar Produto",?70,                "#"
+	Write !, "#", " 3- Realizar Pedido", ?70,                 "#"
+	Write !, "#", " 4- Exibir dados", ?70,                    "#"
+	Write !, "#", " 5- Atualizar dados", ?70,                 "#"
+	Write !, "#", " 6- Apagar dados", ?70,                    "#"
+	Write !, "#", " 0- Sair", ?70,                            "#"
+	Write !, "#", ?70,                                        "#"
+	Read !,  "# Entre com a opção desejada: ", num Write ?70, "#"
+	Write !, "#", ?70,                                        "#"
 	Write !, tralha
 
 	Hang .25
- //	
- 
 	
 	Set:'num $Halt = "sairHalt^cadastroOFC"
 	Halt:'num
 	Do $Case(num, 1:cadastrarCliente, 2:cadastrarProduto, 3:realizarPedido, 4:exibirDados, 5:atualizarDados,6:apagarDados, :Inicio)
 	
+	Quit
+
+cabecalho(titulo)
+	NEW hora
+	Set tralha = "#######################################################################"
+	Set hora = $Zdatetime($Horolog, 4, 2)
+	
+	Write !!!, tralha
+	Write !, "#", ?70,                                       "#"
+	Write !, "#", ?(35-($LENGTH(titulo)/2)) ,titulo, ?70,         "#"
+	Write !, "#", $Justify(hora_" #", 70)
+	Write !, tralha
 	Quit
 	
 	
@@ -54,28 +57,18 @@ realizarPedido
 	Quit
 
 exibirDados
-	NEW hora, num
- // cabeçalho
-	Set hora = $Zdatetime($Horolog, 4, 2)
-	
-	Write !!!, tralha
-	Write !, "#", ?70,                                       "#"
-	Write !, "#", ?25 ,"Solicitação de Pedido", ?70,         "#"
-	Write !, "#", $Justify(hora_" #", 70)
+	NEW num
+	Do cabecalho^cadastroOFC("Exibir Dados")
+	Write !, "#", " Menu", ?70,                               "#"
+	Write !, "#", " 1- Exibir dados de clientes", ?70,        "#"
+	Write !, "#", " 2- Exibir dados de produtos",?70,         "#"
+	Write !, "#", " 3- Exibir dados de pedidos", ?70,         "#"
+	Write !, "#", " 0- Sair", ?70,                            "#"
+	Write !, "#", ?70,                                        "#"
+	Read !,  "# Entre com a opção desejada: ", num Write ?70, "#"
+	Write !, "#", ?70,                                        "#"
 	Write !, tralha
-	Write !, "#", " Menu", ?70,                              "#"
-	Write !, "#", " 1- Exibir dados de clientes", ?70,       "#"
-	Write !, "#", " 2- Exibir dados de produtos",?70,        "#"
-	Write !, "#", " 3- Exibir dados de pedidos", ?70,        "#"
-	Write !, "#", " 0- Sair", ?70,                           "#"
-	Write !, "#", ?70,                                       "#"
-	
-	Read !, "# Entre com a opção desejada: ", num Write ?70, "#"
-	
-	Write !, "#", ?70,                                       "#"
-	Write !, tralha
-	
-	
+
 	Do $Case(num, 1:exibirClientes, 2:exibirProdutos, 3:exibirPedidos, :Inicio)
 	Quit
 	
