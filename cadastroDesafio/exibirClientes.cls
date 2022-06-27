@@ -39,17 +39,22 @@ todos
 	Quit
 	
 exibirTudo() public
-	NEW subs, nome, end
+	NEW subs, nome, end, cliente
     // itera e printa todos no array
 	Set subs = $Order(^cliente(""), 1)
 	// cabeçalho antes da iteração
 	Write !!, " |   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
 	While (subs '= "") {
+		Set cliente = ^cliente(subs)
 	    // se nome e endereço forem muito grandes corta o que vai aparecer no print
-		Set nome = $Piece(^cliente(subs), "^", 1) If $LENGTH(nome) > 11 { Set $Extract(nome,8, *) = "..."}
-		Set end = $Piece(^cliente(subs), "^", 2) If $LENGTH(end) > 19 { Set $Extract(end,16, *) = "..."}
+		Set nome = $Piece(cliente, "^", 1)
+		If $LENGTH(nome) > 11 {
+			Set $Extract(nome,8, *) = "..."}
+		Set end = $Piece(cliente, "^", 2)
+		If $LENGTH(end) > 19 {
+			Set $Extract(end,16, *) = "..."}
 	    // printa as informações
-		Write !, subs, ?2, nome, ?13, end, ?33, $Piece(^cliente(subs), "^", 3), ?50, $Piece(^cliente(subs), "^", 4), ?66, $Piece(^cliente(subs), "^", 5)
+		Write !, subs, ?2, nome, ?13, end, ?33, $Piece(cliente, "^", 3), ?50, $Piece(cliente, "^", 4), ?66, $Piece(cliente, "^", 5)
         // próxima iteração
 		Set subs = $Order(^cliente(subs), 1) }
 	Quit
@@ -63,22 +68,31 @@ porID
 	Read !,  "# Digite o ID: ", ID, ?70, "#"
 	Write !, "#", ?70,                   "#"
 	
-	If (ID="") { Write !, tralha Hang .25 GOTO inicio } // volta se o ID for nulo 
-	If '$Data(^cliente(ID)) { Write !, tralha, !, "ID não cadastrado" }
- 	Else { Do exibirPorID(ID) Write !, tralha }
+	If (ID="") {
+		Write !, tralha
+		Hang .25 GOTO inicio } // volta se o ID for nulo 
+	If '$Data(^cliente(ID)) {
+		Write !, tralha, !, "ID não cadastrado" }
+ 	Else {
+	 	Do exibirPorID(ID)
+	 	Write !, tralha }
 	
 	Read !, enter // espera interação do usuário para seguir
 	GOTO inicio
 	Quit
 
-exibirPorID(ID) public	   	
-	Write !, "#", ?70,                                                   "#"
-	Write !, "# Nome.............: ", $Piece(^cliente(ID), "^", 1), ?70, "#"
-	Write !, "# Endereço.........: ", $Piece(^cliente(ID), "^", 2), ?70, "#"
-	Write !, "# Telefone.........: ", $Piece(^cliente(ID), "^", 3), ?70, "#"
-	Write !, "# CPF..............: ", $Piece(^cliente(ID), "^", 4), ?70, "#" 
-	Write !, "# Data Nascimento..: ", $Piece(^cliente(ID), "^", 5), ?70, "#"
-	Write !, "#", ?70,                                                   "#"
+exibirPorID(ID) public
+	If (ID?.N) {
+		Set cliente = ^cliente(ID) }
+	Else {  // passar valor direto da var, ou id
+		Set cliente = ID }
+	Write !, "#", ?70,                                              "#"
+	Write !, "# Nome.............: ", $Piece(cliente, "^", 1), ?70, "#"
+	Write !, "# Endereço.........: ", $Piece(cliente, "^", 2), ?70, "#"
+	Write !, "# Telefone.........: ", $Piece(cliente, "^", 3), ?70, "#"
+	Write !, "# CPF..............: ", $Piece(cliente, "^", 4), ?70, "#" 
+	Write !, "# Data Nascimento..: ", $Piece(cliente, "^", 5), ?70, "#"
+	Write !, "#", ?70,                                              "#"
 	Quit
 
 
@@ -130,23 +144,32 @@ porIdade
 	Quit
 
 printClientes(search, type)
-	NEW subs, bool, nome, end, idade
+	NEW subs, bool, nome, end, idade, cliente
 	Set subs = $Order(^cliente(""), 1)
 	Write !!, " |   Nome   |     Endereço     |    Telefone    |      CPF      | Nascimento |"
 	While (subs '= "") {
+		Set cliente = ^cliente(subs)
 		If type=2 {
-			Set idade = (+$Horolog - $Zdateh($Piece(^cliente(subs), "^", 5),4)) / 365 // calcula a idade
-			If ageSearch >= 0 { Set bool = idade '< search } // se a entrada for positiva, aceita todas as idades acima da escolhida
-			Elseif ageSearch < 0 { Set bool = idade '> -search } } // se a entrada for negativa, aceita todas as idades abaixo da escolhida
-		Else { Set bool = $Zconvert($Piece(^cliente(subs), "^", type), "l")[$Zconvert(search, "l") }
+			Set idade = (+$Horolog - $Zdateh($Piece(cliente, "^", 5),4)) / 365 // calcula a idade
+			If ageSearch >= 0 {
+				Set bool = idade '< search } // se a entrada for positiva, aceita todas as idades acima da escolhida
+			Elseif ageSearch < 0 {
+				Set bool = idade '> -search } } // se a entrada for negativa, aceita todas as idades abaixo da escolhida
+		Else {
+			Set bool = $Zconvert($Piece(cliente, "^", type), "l")[$Zconvert(search, "l") }
 		If bool {
 		    // arruma tamanhos de strings
-			Set nome = $Piece(^cliente(subs), "^", 1) If $LENGTH(nome) > 11 { Set $Extract(nome,8, *) = "..."}
-			Set end = $Piece(^cliente(subs), "^", 2) If $LENGTH(end) > 19 { Set $Extract(end,16, *) = "..."}
+			Set nome = $Piece(cliente, "^", 1)
+			If $LENGTH(nome) > 11 {
+				Set $Extract(nome,8, *) = "..."}
+			Set end = $Piece(cliente, "^", 2)
+			If $LENGTH(end) > 19 {
+				Set $Extract(end,16, *) = "..."}
             // printa
-			Write !, subs, ?2, nome, ?13, end, ?33, $Piece(^cliente(subs), "^", 3), ?50, $Piece(^cliente(subs), "^", 4), ?66, $Piece(^cliente(subs), "^", 5)
+			Write !, subs, ?2, nome, ?13, end, ?33, $Piece(cliente, "^", 3), ?50, $Piece(cliente, "^", 4), ?66, $Piece(cliente, "^", 5)
 		}
 	    // pxm iteração
 		Set subs = $Order(^cliente(subs), 1) }
 	Quit
+		
 		
