@@ -38,19 +38,24 @@ todos
 	Quit
 
 exibirTudo() public
-	NEW subs, nome, desc
+	NEW subs, nome, desc, produto
  	// itera e printa todos no array
 	Set subs = $Order(^produto(""), 1)
 	// cabeçalho antes da iteração
 	Write !!, $Justify("|     Nome     |            Descrição            |  Preço  |", 70)
 	While (subs '= "") {
+		Set produto = ^produto(subs)
 	    // se nome e descrição forem muito grandes corta o que vai aparecer no print
-		Set nome = $Piece(^produto(subs), "^", 1) If $LENGTH(nome) > 15 { Set $Extract(nome,12, *) = "..."}
-		Set desc = $Piece(^produto(subs), "^", 2) If $LENGTH(desc) > 34 { Set $Extract(desc,31, *) = "..."}
+		Set nome = $Piece(produto, "^", 1)
+		If $LENGTH(nome) > 15 {
+			Set $Extract(nome,12, *) = "..."}
+		Set desc = $Piece(produto, "^", 2)
+		If $LENGTH(desc) > 34 {
+			Set $Extract(desc,31, *) = "..."}
 	    // printa
-		Write !, "Produto "_subs_": ", ?10, nome, ?26, desc, ?60, $Justify($Piece(^produto(subs), "^", 3), 9)
+		Write !, "Produto "_subs_": ", ?10, nome, ?26, desc, ?60, $Justify($Piece(produto, "^", 3), 9)
 	    // próxima iteração
-		Set subs = $Order(^produto(subs), 1) }
+		Set subs = $Order(produto, 1) }
 	Quit
 
 
@@ -63,20 +68,30 @@ porID
 	Write !, "#", ?70,                   "#"
 	
    // Print
-	IF (ID="") { Write !, tralha Hang .25 GOTO inicio } // volta se o ID for nulo 
-	If '$Data(^produto(ID)) { Write !, tralha, !, "ID não cadastrado" }
-	Else { Do exibirPorID(ID) Write !, tralha}	
+	IF (ID="") {
+		Write !, tralha
+		Hang .25
+		GOTO inicio } // volta se o ID for nulo 
+	If '$Data(^produto(ID)) {
+		Write !, tralha, !, "ID não cadastrado" }
+	Else {
+		Do exibirPorID(ID)
+		Write !, tralha}	
 	
 	Read !, enter // espera interação do usuário para seguir
 	GOTO inicio	
 	Quit
 	
 exibirPorID(ID) public
-	Write !,"#", ?70,                                               "#"
-	Write !, "# Nome........: ", $Piece(^produto(ID), "^", 1), ?70, "#"
-	Write !, "# Descrição...: ", $Piece(^produto(ID), "^", 2), ?70, "#"
-	Write !, "# Preço.......: ", $Piece(^produto(ID), "^", 3), ?70, "#"
-	Write !,"#", ?70,                                               "#"
+	If (ID?.N) {
+		Set produto = ^produto(ID) }
+	Else { // passar valor direto da var, ou id
+		Set produto = ID }
+	Write !,"#", ?70,                                          "#"
+	Write !, "# Nome........: ", $Piece(produto, "^", 1), ?70, "#"
+	Write !, "# Descrição...: ", $Piece(produto, "^", 2), ?70, "#"
+	Write !, "# Preço.......: ", $Piece(produto, "^", 3), ?70, "#"
+	Write !,"#", ?70,                                          "#"
 	Quit
 	
 	
@@ -112,21 +127,29 @@ porPreco
 	Quit
 
 printProdutos(search, type)
-	NEW subs, bool, nome, desc
+	NEW subs, bool, nome, desc, produto
 	Set subs = $Order(^produto(""), 1)
 	Write !!, $Justify("|     Nome     |            Descrição            |  Preço  |", 70)
 	While (subs '= "") {
-		If type=1 { Set bool = $Zconvert($Piece(^produto(subs), "^", 1), "l")[$Zconvert(search, "l") } // só entra para o print se tiver o nome ou a parte pesquisada
+		Set produto = ^produto(subs)
+		If type=1 {
+			Set bool = $Zconvert($Piece(produto, "^", 1), "l")[$Zconvert(search, "l") } // só entra para o print se tiver o nome ou a parte pesquisada
 		If type=2 {
-			If priceSearch >= 0 { Set bool = $Piece(^produto(subs), "^", 3) '< search }
-			Elseif priceSearch < 0 { Set bool = $Piece(^produto(subs), "^", 3) '> -search } }     
+			If priceSearch >= 0 {
+				Set bool = $Piece(produto, "^", 3) '< search }
+			Elseif priceSearch < 0 {
+				Set bool = $Piece(produto, "^", 3) '> -search } }     
 		If bool {    
 		    // arruma tamanhos de strings	
-			Set nome = $Piece(^produto(subs), "^", 1) If $LENGTH(nome) > 15 { Set $Extract(nome,12, *) = "..."}
-			Set desc = $Piece(^produto(subs), "^", 2) If $LENGTH(desc) > 34 { Set $Extract(desc,31, *) = "..."}
+			Set nome = $Piece(produto, "^", 1)
+			If $LENGTH(nome) > 15 {
+				Set $Extract(nome,12, *) = "..."}
+			Set desc = $Piece(produto, "^", 2)
+			If $LENGTH(desc) > 34 {
+				Set $Extract(desc,31, *) = "..."}
 		    // printa
-			Write !, "Produto "_subs_": ", ?10, nome, ?26, desc, ?60, $Justify($Piece(^produto(subs), "^", 3), 9) }
+			Write !, "Produto "_subs_": ", ?10, nome, ?26, desc, ?60, $Justify($Piece(produto, "^", 3), 9) }
         // próxima iteração
-		Set subs = $Order(^produto(subs), 1) }
+		Set subs = $Order(produto, 1) }
 	Quit
 
