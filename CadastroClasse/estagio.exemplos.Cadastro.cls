@@ -1,19 +1,5 @@
-Class estagio.exemplos.Cadastro Extends %Persistent
+Class estagio.exemplos.Cadastro [ Abstract ]
 {
-
-// TODO: 
-
-// arrumar SQL injection - exibir e atualizar
-
-// colocar /// nas funcoes
-
-// comentar codigo
-
-// fazer Query
-
-// deixar cadastro como abstract? fazer as outras serem extend de cadastro? - tralha como parametro
-
-// quebrar linha quando passar de 70 caracteres?
 
 // Observações:
 
@@ -21,102 +7,100 @@ Class estagio.exemplos.Cadastro Extends %Persistent
 
 // // guardar a informação da forma mais simples possível e interpretar de maneira legivel somente na hora de exibir
 
-/// Teste - início do cadastro - HTML
+// // comentarios em /// aparecem na pagina HTML da classe
+
+// Dúvidas:
+
+// // É preferível definir como Query ou do jeito que eu to fazendo? Tem diferença?
+
+/// Exibe menu inicial
 ClassMethod Iniciar()
 {
 	Do ##class(estagio.exemplos.Cadastro).Cabecalho("Solicitação de Pedido")
-	Write !, "#", " Menu", ?70,                                                    "#"
-	Write !, "#", " 1- Cadastrar dados", ?70,                                      "#"
-	Write !, "#", " 2- Exibir dados", ?70,                                         "#"
-	Write !, "#", " 3- Atualizar dados", ?70,                                      "#"
-	Write !, "#", " 4- Apagar dados", ?70,                                         "#"
-	Write !, "#", " 0- Sair", ?70,                                                 "#"
-	Write !, "#", ?70,                                                             "#"
-	Read !,  "# Entre com a opção desejada: ", tNum Write ?70,                     "#"
-	Hang .25
-	Write !, "#", ?70,                                                             "#"
-	Write !, "#######################################################################"
+	Set tNum = ##class(estagio.exemplos.Cadastro).Menu("Cadastrar dados", "Exibir dados", "Atualizar dados", "Apagar dados")
 
-	Hang .25
-	// Ver como funciona halt aqui
-	// Set:'num $Halt = "sairHalt^cadastroOFC"
+
+	Hang .25 // cada opção exibe um menu para escolher se a ação será em produtos, clientes ou pedidos
 	Do $Case(tNum, 1:##class(estagio.exemplos.Cadastro).CadastrarMenu(), 2:##class(estagio.exemplos.Cadastro).ExibirMenu(), 3:##class(estagio.exemplos.Cadastro).AtualizarMenu(), 4:##class(estagio.exemplos.Cadastro).ExcluirMenu(), :##class(estagio.exemplos.Cadastro).Sair())
-	Do ##class(estagio.exemplos.Cadastro).Iniciar()
+	Do ##class(estagio.exemplos.Cadastro).Iniciar() // Só sai quando chama halt
 	Quit
 }
 
+/// Exibe menu de cadastro
 ClassMethod CadastrarMenu()
 {
 	Do ##class(estagio.exemplos.Cadastro).Cabecalho("Cadastrar")
-	Write !, "#", " Menu", ?70,                                                    "#"
-	Write !, "#", " 1- Cadastrar clientes", ?70,                                   "#"
-	Write !, "#", " 2- Cadastrar produtos",?70,                                    "#"
-	Write !, "#", " 3- Cadastrar pedidos", ?70,                                    "#"
-	Write !, "#", " 0- Sair", ?70,                                                 "#"
-	Write !, "#", ?70,                                                             "#"
-	Read !,  "# Entre com a opção desejada: ", tNum Write ?70,                     "#"
-	Hang .25
-	Write !, "#", ?70,                                                             "#"
-	Write !, "#######################################################################"
+	Set tNum = ##class(estagio.exemplos.Cadastro).Menu("Cadastrar clientes", "Cadastrar produtos", "Cadastrar pedidos")
 
 	Do $Case(tNum, 1:##class(estagio.exemplos.Cliente).ChamaCadastro(), 2:##class(estagio.exemplos.Produto).ChamaCadastro(), 3:##class(estagio.exemplos.Pedido).ChamaCadastro(), :##class(estagio.exemplos.Cadastro).Iniciar()) 
 	Quit
 }
 
+/// Exibe menu de exibição
 ClassMethod ExibirMenu()
 {
 	Do ##class(estagio.exemplos.Cadastro).Cabecalho("Exibir Dados")
-	Write !, "#", " Menu", ?70,                                                    "#"
-	Write !, "#", " 1- Exibir dados de clientes", ?70,                             "#"
-	Write !, "#", " 2- Exibir dados de produtos",?70,                              "#"
-	Write !, "#", " 3- Exibir dados de pedidos", ?70,                              "#"
-	Write !, "#", " 0- Sair", ?70,                                                 "#"
-	Write !, "#", ?70,                                                             "#"
-	Read !,  "# Entre com a opção desejada: ", tNum Write ?70,                     "#"
-	Hang .25
-	Write !, "#", ?70,                                                             "#"
-	Write !, "#######################################################################"
+	Set tNum = ##class(estagio.exemplos.Cadastro).Menu("Exibir dados de clientes", "Exibir dados de produtos", "Exibir dados de pedidos")
 
 	Do $Case(tNum, 1:##class(estagio.exemplos.Cliente).ChamaExibir(), 2:##class(estagio.exemplos.Produto).ChamaExibir(), 3:##class(estagio.exemplos.Pedido).ChamaExibir(), :##class(estagio.exemplos.Cadastro).Iniciar()) 
 	Quit
 }
 
+/// Exibe menu de atualização
 ClassMethod AtualizarMenu()
 {
 	Do ##class(estagio.exemplos.Cadastro).Cabecalho("Atualizar Dados")
-	Write !, "#", " Menu", ?70,                                                    "#"
-	Write !, "#", " 1- Atualizar dados de clientes", ?70,                          "#"
-	Write !, "#", " 2- Atualizar dados de produtos",?70,                           "#"
-	Write !, "#", " 3- Atualizar dados de pedidos", ?70,                           "#"
-	Write !, "#", " 0- Sair", ?70,                                                 "#"
-	Write !, "#", ?70,                                                             "#"
-	Read !,  "# Entre com a opção desejada: ", tNum Write ?70,                     "#"
-	Hang .25
-	Write !, "#", ?70,                                                             "#"
-	Write !, "#######################################################################"
+	Set tNum = ##class(estagio.exemplos.Cadastro).Menu("Atualizar dados de clientes", "Atualizar dados de produtos", "Atualizar dados de pedidos")
 
 	Do $Case(tNum, 1:##class(estagio.exemplos.Cliente).ChamaAtualiza(), 2:##class(estagio.exemplos.Produto).ChamaAtualiza(), 3:##class(estagio.exemplos.Pedido).ChamaAtualiza(), :##class(estagio.exemplos.Cadastro).Iniciar()) 
 	Quit
 }
 
+/// Exibe menu de exclusão
 ClassMethod ExcluirMenu()
 {
 	Do ##class(estagio.exemplos.Cadastro).Cabecalho("Excluir Dados")
-	Write !, "#", " Menu", ?70,                                                    "#"
-	Write !, "#", " 1- Excluir dados de clientes", ?70,                            "#"
-	Write !, "#", " 2- Excluir dados de produtos",?70,                             "#"
-	Write !, "#", " 3- Excluir dados de pedidos", ?70,                             "#"
-	Write !, "#", " 0- Sair", ?70,                                                 "#"
-	Write !, "#", ?70,                                                             "#"
-	Read !,  "# Entre com a opção desejada: ", tNum Write ?70,                     "#"
-	Hang .25
-	Write !, "#", ?70,                                                             "#"
-	Write !, "#######################################################################"
-
-	Do $Case(tNum, 1:##class(estagio.exemplos.Cliente).ChamaApagar(), 2:##class(estagio.exemplos.Produto).ChamaApagar(), 3:##class(estagio.exemplos.Pedido).ChamaApagar(), :##class(estagio.exemplos.Cadastro).Iniciar()) // arrumar
+	Set tNum = ##class(estagio.exemplos.Cadastro).Menu("Excluir dados de clientes", "Excluir dados de produtos", "Excluir dados de pedidos")
+	
+	Do:(tNum=1)||(tNum=2)||(tNum=3) ##class(estagio.exemplos.Cadastro).ChamaApagar(tNum)
+	//	Do $Case(tNum, 1:##class(estagio.exemplos.Cadastro).ChamaApagar(1), 2:##class(estagio.exemplos.Cadastro).ChamaApagar(2), 3:##class(estagio.exemplos.Pedido).ChamaApagar(), :##class(estagio.exemplos.Cadastro).Iniciar()) // arrumar
 	Quit
 }
 
+/// Apaga tudo ou o objeto escolhido por ID.
+ClassMethod ChamaApagar(pClasse As %Integer)
+{
+	Set tAux = pClasse
+	Set pClasse = $CASE(pClasse, 1:##class(estagio.exemplos.Cliente).%New(), 2:##class(estagio.exemplos.Produto).%New(), 3:##class(estagio.exemplos.Pedido).%New())
+	Do pClasse.Exibir(,0) // exibe todos os produtos (sem opção de expandir)
+	Read !!, " Deseja apagar quais dados? (0 apaga  tudo) ", tNum
+	Set tObjeto = pClasse.%OpenId(tNum)
+	Do:(tObjeto'="") tObjeto.ExibirUm() // se for digitado ID válido, mostra o produto que pediu para apagar
+	
+	Read !!, " Tem certeza? ", tAns
+	
+	If ("SimSIMsim"[tAns)
+	{	// se usuário confirma, apaga o ID selecionado ou o extent
+		If (tNum = 0)
+		{
+			Do pClasse.%DeleteExtent()
+			Write !, " Todos os dados apagados."
+		}   
+		Else
+		{	
+			Do pClasse.%DeleteId(tNum)
+			Write !, " Dados apagados."
+		}
+		Read !, " Apagar mais algum? ", tAns
+		If ("simSimSIM"[tAns)
+		{
+			Do ##class(estagio.exemplos.Cadastro).ChamaApagar(tAux) // começa de novo para apagar mais
+		}		
+	}
+	Quit
+}
+
+/// Exibe halt
 ClassMethod Sair()
 {
 	Read !, " Tem certeza que deseja sair? ", tAns
@@ -127,10 +111,11 @@ ClassMethod Sair()
 	}
 	Else
 	{
-		Quit
+		Quit // volta para Iniciar()
 	}
 }
 
+/// Exibe cabeçalho com título (passado por parâmetro) e horário
 ClassMethod Cabecalho(pTitulo As %String)
 {
 	Set tHora = $Zdatetime($Horolog, 4, 2)
@@ -141,6 +126,29 @@ ClassMethod Cabecalho(pTitulo As %String)
 	Write !,   "#", $Justify(tHora_" #", 70)
 	Write !,   "#######################################################################"
 	Quit
+}
+
+/// Exibe Menu com opções para escolha e retorna a escolha.
+ClassMethod Menu(pOpcao... As %String) As %Integer
+{
+	Set args = $GET(pOpcao, 0)
+	Set tCount = 0
+	Write !,   "#", " Menu", ?70,                                                    "#"
+	Write !,   "#", ?70,                                                             "#"
+	For i = 1:1:args
+	{	
+		Write !, "# "_$INCREMENT(tCount)_"- "_pOpcao(i), ?70,                        "#"
+	}
+	Write !,   "#", " 0- Sair", ?70,                                                 "#"
+	Write !,   "#", ?70,                                                             "#"
+	
+	Read !,    "# Entre com a opção desejada: ", tNum
+	
+	Write ?70,                                                                       "#"
+	Write !,   "#", ?70,                                                             "#"
+	Write !,   "#######################################################################"
+	
+	Quit tNum
 }
 
 Storage Default
@@ -174,3 +182,4 @@ Storage Default
 }
 
 }
+
