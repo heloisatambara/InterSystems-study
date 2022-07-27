@@ -1,15 +1,49 @@
 Class estagio.livraria.Aluguel Extends %Persistent
 {
 
+Relationship Livro As estagio.livraria.Livro [ Cardinality = one, Inverse = Aluguel ];
+
 Property DataDeEmp As %Date(FORMAT = 4);
 
 Property DataDeDev As %Date(FORMAT = 4);
 
-Property Livro As estagio.livraria.Livro;
+// Property Livro As estagio.livraria.Livro;
 
 Property Fidelidade As %Boolean;
 
 Property Valor As %Decimal(SCALE = 2) [ Calculated, SqlComputeCode = { Set {Valor} = $CASE({Fidelidade}, 0:5, 1:2) }, SqlComputed ];
+
+Trigger Emprestimo [ Event = INSERT, Time = AFTER ]
+{
+	Try
+	{
+		Set tID = {ID}
+		Set tSt = ##class(%SQL.Statement).%New()
+		Set tSC = tSt.%Prepare("SELECT Livro->Titulo As Title FROM estagio_livraria.Aluguel WHERE ID = ?")
+		
+		Throw:$$$ISERR(tSC)
+		
+		Set tRset = tSt.%Execute(tID)
+		Do tRset.%Next()
+		
+		Set tSt = ##class(%SQL.Statement).%New()
+		Set tSC = tSt.%Prepare("UPDATE estagio_livraria.Livro SET Status = 'A' WHERE Titulo = ?")
+		
+		Throw:$$$ISERR(tSC)
+		
+		Set tRset = tSt.%Execute(tRset.%Get("Title"))
+		
+		Throw:(tRset.%SQLCODE<0)
+	}
+	Catch EXC
+	{
+		Write !, "Erro de TRIGGER"
+	
+		Write:($DATA(tRset)&&(tRset.%SQLCODE<0)) !!,"A", tRset.%Message
+		Write !!,"B", $SYSTEM.Status.DisplayError(tSC)
+		Write !!,"C", $SYSTEM.Status.DisplayError(EXC.AsStatus())
+	}
+}
 
 ClassMethod Alugar() As %Status
 {
@@ -39,7 +73,7 @@ ClassMethod Alugar() As %Status
 		
 		Set tLivro = tRset.%CurrentResult
 		
-		Write !!,  ">>> Alugar """_tLivro.Titulo_""""
+		Write !!,  ">>> Alugar """_tLivro.Titulo_""" de "_tLivro.Autor
 		
 	
 		Set tSt = ##class(%SQL.Statement).%New()
@@ -47,7 +81,7 @@ ClassMethod Alugar() As %Status
 		
 		Throw:$$$ISERR(tSC)
 		
-		Set tRset = tSt.%Execute(+$HOROLOG, tLivro, tFidelidade)
+		Set tRset = tSt.%Execute(+$HOROLOG, tLivro.ID, tFidelidade)
 		
 		Throw:(tRset.%SQLCODE<0)
 	}
