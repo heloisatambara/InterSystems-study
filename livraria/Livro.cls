@@ -1,12 +1,6 @@
 Class estagio.livraria.Livro Extends %Persistent
 {
 
-// To do:
-
-// // Exibir livros
-
-// // Exibir livros disponíveis
-
 Relationship Aluguel As estagio.livraria.Aluguel [ Cardinality = many, Inverse = Livro ];
 
 Property Titulo As %String(MAXLEN = 100) [ Required ];
@@ -71,11 +65,50 @@ ClassMethod Cadastrar() As %Status
 	Quit tSC
 }
 
-
-ClassMethod Exibir()
+ClassMethod Exibir(pAlugado As %String)
 {
+	Set tSC = $$$OK
 	
+	Try
+	{
+		Set tQuery = "SELECT ID, Titulo, Autor, Editora, Status FROM estagio_livraria.Livro"
+		
+		Read !, ">>> Por Título: ", tTitulo
+		Read !, ">>> Por Autor@: ", tAutor
+		Read !, ">>> Por Editora: ", tEditora, !
+		
+		Set tQuery = tQuery_" WHERE Titulo LIKE ?", tTitulo = "%"_tTitulo_"%"
+		Set tQuery = tQuery_" AND Autor LIKE ?", tAutor = "%"_tAutor_"%"
+		Set tQuery = tQuery_" AND Editora LIKE ?", tEditora = "%"_tEditora_"%"
+		Set:($DATA(pAlugado)) tQuery = tQuery_" AND Status = '"_pAlugado_"'"
+		Set tSt = ##class(%SQL.Statement).%New()
+		Set tSC = tSt.%Prepare(tQuery)
+		
+		Throw:$$$ISERR(tSC)
+
+		Set tRset = tSt.%Execute(tTitulo, tAutor, tEditora)
+
+		
+		Write !, "   Título", ?25, "Autor", ?45, "Editora", ?60, "Status"
+		
+		While (tRset.%Next())
+		{
+			Set tTitulo = tRset.%Get("Titulo")
+			Set:($LENGTH(tTitulo)>17) tTitulo = $EXTRACT(tTitulo,1, 17)_"..."
+	
+			Write !, "#"_tRset.%Get("ID")_" "_tTitulo, ?25, tRset.%Get("Autor"), ?45, tRset.%Get("Editora"), ?60, tRset.%Get("Status")
+		} 
+		
+	}
+	Catch EXC
+	{
+		Write:$$$ISERR(tSC) !, $SYSTEM.Status.DisplayError(tSC)
+		Write !, $SYSTEM.Status.DisplayError(EXC.AsStatus())
+	}
+	
+	Quit
 }
+
 Storage Default
 {
 <Data name="LivroDefaultData">
