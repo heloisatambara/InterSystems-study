@@ -9,6 +9,30 @@ Property Editora As %String;
 
 Property Status As %String(DISPLAYLIST = ",Disponível, Alugado", VALUELIST = ",D,A");
 
+Trigger Cadastro [ Event = INSERT, Time = AFTER ]
+{
+	Try
+	{
+		Set tID = {ID}
+		
+		Set tSt = ##class(%SQL.Statement).%New()
+		Set tSC = tSt.%Prepare("UPDATE estagio_livraria.Livro SET Status = 'D' WHERE ID = ?")
+		
+		Throw:$$$ISERR(tSC)
+		
+		Set tRset = tSt.%Execute(tID)
+		
+		Throw:(tRset.%SQLCODE<0)
+	}
+	Catch EXC
+	{
+		Write !, "Erro de TRIGGER"
+		Write:($DATA(tRset)&&(tRset.%SQLCODE<0)) !!, tRset.%Message
+		Write !!, $SYSTEM.Status.DisplayError(tSC)
+		Write !!, $SYSTEM.Status.DisplayError(EXC.AsStatus())
+	}
+}
+
 ClassMethod Cadastrar() As %Status
 {
 	Set tSC = $$$OK
@@ -32,7 +56,8 @@ ClassMethod Cadastrar() As %Status
 	{	
 		Set tSC = EXC.AsStatus()
 		
-		Write $SYSTEM.Status.DisplayError(tSC)
+		Write !, "Erro no Cadastro"
+		Write !, $SYSTEM.Status.DisplayError(tSC)
 	}
 	
 	Quit tSC
