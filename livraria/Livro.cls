@@ -1,6 +1,14 @@
 Class estagio.livraria.Livro Extends %Persistent
 {
 
+// To do:
+
+// // Exibir livros
+
+// // Exibir livros disponíveis
+
+Relationship Aluguel As estagio.livraria.Aluguel [ Cardinality = many, Inverse = Livro ];
+
 Property Titulo As %String(MAXLEN = 100) [ Required ];
 
 Property Autor As %String;
@@ -63,6 +71,11 @@ ClassMethod Cadastrar() As %Status
 	Quit tSC
 }
 
+
+ClassMethod Exibir()
+{
+	
+}
 Storage Default
 {
 <Data name="LivroDefaultData">
