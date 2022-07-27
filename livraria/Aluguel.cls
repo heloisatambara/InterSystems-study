@@ -17,21 +17,14 @@ Trigger Emprestimo [ Event = INSERT, Time = AFTER ]
 {
 	Try
 	{
-		Set tID = {ID}
+		Set tLivro = {Livro}
+		
 		Set tSt = ##class(%SQL.Statement).%New()
-		Set tSC = tSt.%Prepare("SELECT Livro->Titulo As Title FROM estagio_livraria.Aluguel WHERE ID = ?")
+		Set tSC = tSt.%Prepare("UPDATE estagio_livraria.Livro SET Status = 'A' WHERE ID = ?")
 		
 		Throw:$$$ISERR(tSC)
 		
-		Set tRset = tSt.%Execute(tID)
-		Do tRset.%Next()
-		
-		Set tSt = ##class(%SQL.Statement).%New()
-		Set tSC = tSt.%Prepare("UPDATE estagio_livraria.Livro SET Status = 'A' WHERE Titulo = ?")
-		
-		Throw:$$$ISERR(tSC)
-		
-		Set tRset = tSt.%Execute(tRset.%Get("Title"))
+		Set tRset = tSt.%Execute(tLivro)
 		
 		Throw:(tRset.%SQLCODE<0)
 	}
