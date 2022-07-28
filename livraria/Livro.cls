@@ -1,6 +1,10 @@
 Class estagio.livraria.Livro Extends %Persistent
 {
 
+// TO DO
+
+// // Comentar codigo
+
 Relationship Aluguel As estagio.livraria.Aluguel [ Cardinality = many, Inverse = Livro ];
 
 Property Titulo As %String(MAXLEN = 100) [ Required ];
@@ -71,15 +75,13 @@ ClassMethod Exibir(pAlugado As %String)
 	
 	Try
 	{
-		Set tQuery = "SELECT ID, Titulo, Autor, Editora, Status FROM estagio_livraria.Livro"
+		Set tQuery = "SELECT ID, Titulo, Autor, Editora, Status FROM estagio_livraria.Livro WHERE Titulo LIKE ? AND Autor LIKE ? AND Editora LIKE ?"
 		
 		Read !, ">>> Por Título: ", tTitulo
 		Read !, ">>> Por Autor@: ", tAutor
 		Read !, ">>> Por Editora: ", tEditora, !
 		
-		Set tQuery = tQuery_" WHERE Titulo LIKE ?", tTitulo = "%"_tTitulo_"%"
-		Set tQuery = tQuery_" AND Autor LIKE ?", tAutor = "%"_tAutor_"%"
-		Set tQuery = tQuery_" AND Editora LIKE ?", tEditora = "%"_tEditora_"%"
+		Set tAutor = "%"_tAutor_"%", tEditora = "%"_tEditora_"%", tTitulo = "%"_tTitulo_"%"
 		Set:($DATA(pAlugado)) tQuery = tQuery_" AND Status = '"_pAlugado_"'"
 		Set tSt = ##class(%SQL.Statement).%New()
 		Set tSC = tSt.%Prepare(tQuery)
@@ -89,24 +91,85 @@ ClassMethod Exibir(pAlugado As %String)
 		Set tRset = tSt.%Execute(tTitulo, tAutor, tEditora)
 
 		
-		Write !, "   Título", ?25, "Autor", ?45, "Editora", ?60, "Status"
+		Write !, "     Título", ?29, "Autor", ?50, "Editora", ?65, "Status"
 		
 		While (tRset.%Next())
 		{
 			Set tTitulo = tRset.%Get("Titulo")
-			Set:($LENGTH(tTitulo)>17) tTitulo = $EXTRACT(tTitulo,1, 17)_"..."
+			Set:($LENGTH(tTitulo)>20) tTitulo = $EXTRACT(tTitulo,1, 17)_"..."
+			Set tEditora = tRset.%Get("Editora")
+			Set:($LENGTH(tEditora)>14) tEditora = $EXTRACT(tEditora, 1, 11)_"..."
 	
-			Write !, "#"_tRset.%Get("ID")_" "_tTitulo, ?25, tRset.%Get("Autor"), ?45, tRset.%Get("Editora"), ?60, tRset.%Get("Status")
+			Write !, "#"_tRset.%Get("ID"), ?5, tTitulo, ?29, tRset.%Get("Autor"), ?50, tEditora, ?65, tRset.%Get("Status")
 		} 
+		
+		Read !,tEnter
 		
 	}
 	Catch EXC
 	{
+		Write !, "Erro de exibição"
 		Write:$$$ISERR(tSC) !, $SYSTEM.Status.DisplayError(tSC)
 		Write !, $SYSTEM.Status.DisplayError(EXC.AsStatus())
 	}
 	
 	Quit
+}
+
+ClassMethod Apagar() As %Status
+{
+	Set tSC = $$$OK
+	
+	Try
+	{		
+		Do
+		{
+			Read !, ">>> Apagar livro: ", tTitulo
+		
+			Set tSt = ##class(%SQL.Statement).%New()
+			Set tSC = tSt.%Prepare("SELECT ID, Status, Titulo FROM estagio_livraria.Livro WHERE Titulo LIKE ?")
+		
+			Throw:$$$ISERR(tSC)
+			
+			Set tRset = tSt.%Execute("%"_tTitulo_"%")
+			
+			While tRset.%Next()
+			{
+				/* Achar rowcount */
+			}
+			
+			Write:(tRset.%Get("Status")="A") !, """"_tRset.%Get("Titulo")_""" não pode ser apagado, pois está alugado."
+		}
+		While ((tRset.%ROWCOUNT '=1)||(tRset.%Get("Status")="A"))
+		
+		Write !, " >>> Deletar "_tRset.%Get("Titulo")_"? "
+		
+		Read tResposta
+		
+		Set tSt = ##class(%SQL.Statement).%New()
+		Set:("SIMSimsim"[tResposta) tSC = tSt.%Prepare("DELETE FROM estagio_livraria.Livro WHERE ID = "_tRset.%Get("ID"))
+		
+		Write !, $SELECT("SIMSimsim"[tResposta:">>> Dados apagados", "SIMSimsim"'[tResposta:">>> Dados mantidos")
+		
+		Throw:$$$ISERR(tSC)
+		
+		Set tRset = tSt.%Execute()
+		
+		Throw:(tRset.%SQLCODE<0)
+		
+	}
+	Catch EXC
+	{
+		Write !, "Erro ao apagar dados"
+		Write:($DATA(tRset)&&(tRset.%SQLCODE<0)) !!, tRset.%Message
+		Write:$$$ISERR(tSC) !!, $SYSTEM.Status.DisplayError(tSC)
+		
+		Set tSC = EXC.AsStatus()
+
+		Write !!, $SYSTEM.Status.DisplayError(tSC)	
+	}
+	
+	Quit tSC
 }
 
 Storage Default
