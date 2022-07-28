@@ -1,11 +1,52 @@
 Class estagio.livraria.Lucro Extends %Persistent
 {
 
+// Todo
+
+// retgistrar valor que foi realmente pago e não valor da fidelidade
+
 Property Aluguel As estagio.livraria.Aluguel;
 
 Property Valor As %Decimal(SCALE = 2) [ Required ];
 
 Property Data As %Date [ Required ];
+
+/// Exibe todos os registros de lucros
+ClassMethod Exibir()
+{
+	Set tSC = $$$OK
+	
+	Try
+	{
+		// prepara query - exibe tudo
+		Set tSt = ##class(%SQL.Statement).%New()
+		Set tSC = tSt.%Prepare("SELECT Data, Valor, Aluguel FROM estagio_livraria.Lucro")
+		
+		Throw:$$$ISERR(tSC) // se der erro ao preparar
+		
+		Set tRset = tSt.%Execute()
+		
+		// escreve cabeçalho
+		Write !, "ID do Aluguel", ?17, "Data do Pagamento",  ?40, "Valor"
+		
+		While tRset.%Next()
+		{
+			// resultados da query
+			Write !, $JUSTIFY("#"_tRset.%Get("Aluguel"),13), ?21, $ZDATE(tRset.%Get("Data"),4) , ?35, $JUSTIFY("R$"_$FNUMBER(tRset.%Get("Valor"),,2),10)
+		}
+		
+		Read !,tEnter
+	}
+	Catch EXC
+	{
+		// tratamento de erros - exibe
+		Write !, "Erro de exibição"
+		Write !, $SYSTEM.Status.DisplayError(EXC.AsStatus())
+		Write:$$$ISERR(tSC) !, $SYSTEM.Status.DisplayError(tSC)
+	}
+
+	Quit
+}
 
 Storage Default
 {
