@@ -1,10 +1,6 @@
 Class estagio.livraria.Lucro Extends %Persistent
 {
 
-// Todo
-
-// retgistrar valor que foi realmente pago e não valor da fidelidade
-
 Property Aluguel As estagio.livraria.Aluguel;
 
 Property Valor As %Decimal(SCALE = 2) [ Required ];
@@ -18,7 +14,7 @@ ClassMethod Exibir()
 	
 	Try
 	{
-		// prepara query - exibe tudo
+		/* QUERY - exibe tudo */
 		Set tSt = ##class(%SQL.Statement).%New()
 		Set tSC = tSt.%Prepare("SELECT Data, Valor, Aluguel FROM estagio_livraria.Lucro")
 		
@@ -26,7 +22,9 @@ ClassMethod Exibir()
 		
 		Set tRset = tSt.%Execute()
 		
-		// escreve cabeçalho
+		
+		/* DISPLAY */
+		// cabeçalho
 		Write !, "ID do Aluguel", ?17, "Data do Pagamento",  ?40, "Valor"
 		
 		While tRset.%Next()
@@ -35,14 +33,14 @@ ClassMethod Exibir()
 			Write !, $JUSTIFY("#"_tRset.%Get("Aluguel"),13), ?21, $ZDATE(tRset.%Get("Data"),4) , ?35, $JUSTIFY("R$"_$FNUMBER(tRset.%Get("Valor"),,2),10)
 		}
 		
-		Read !,tEnter
+		Read !,tEnter // espera interação do usuário para seguir
 	}
 	Catch EXC
 	{
-		// tratamento de erros - exibe
+		/* tratamento de erros */
 		Write !, "Erro de exibição"
+		Write:$$$ISERR(tSC) !, "Erro no %Prepare", $SYSTEM.Status.DisplayError(tSC)
 		Write !, $SYSTEM.Status.DisplayError(EXC.AsStatus())
-		Write:$$$ISERR(tSC) !, $SYSTEM.Status.DisplayError(tSC)
 	}
 
 	Quit
